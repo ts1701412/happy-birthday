@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="../src/icon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Happy Birthday · 自定义图片粒子(去白底)</title>
+    <title>Happy Birthday</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Three.js -->
@@ -183,7 +183,7 @@
             <h1 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">Happy Birthday</h1>
             <div class="space-y-4 text-gray-200 text-lg mb-8 font-light">
                 <p>👋 <b>對著鏡頭 舉起雙手</b> 喚醒魔法</p>
-                <p>👉 <b>竖起食指 (手势1)</b> 或按键盘 <b>1</b> 召唤图片粒子 (自动去白底)</p>
+                <p>👉 <b>竖起食指 (手势1)</b></p>
                 <p>✊ <b>握拳</b> 可返回蛋糕场景</p>
                 <p>💨 <b>持續吹氣</b> 許下心願</p>
             </div>
@@ -403,7 +403,6 @@
             const targetCustomCount = Math.floor(VISUAL_CONFIG.particleCount * 0.7);
             loadCustomImagePoints('./src/1.png', targetCustomCount).then(points => {
                 shapeCache['custom'] = points;
-                log('自定义图片粒子加载完成，已去除白色背景');
                 if (ui.loadingText) ui.loadingText.style.display = 'none';
             }).catch(err => {
                 log('图片加载失败，使用默认爱心后备');
@@ -745,7 +744,6 @@
             ui.mainText.innerText = '';
             ui.subText.innerText = '';
             ui.gestureHint.classList.remove('hidden');
-            ui.gestureHint.innerText = '✨ 图片已召唤 (去白底) ✨';
             setTimeout(() => ui.gestureHint.classList.add('hidden'), 3000);
         }
 
