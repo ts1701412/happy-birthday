@@ -300,7 +300,8 @@
         </div>
     </div>
 
-
+    <!-- 手势提示浮层（无文字版本） -->
+    <div id="gesture-hint" class="gesture-hint hidden"></div>
 
     <script>
         // --- 調適日志工具 ---
@@ -696,41 +697,51 @@
         // ========== 手势检测 ==========
         function isGestureOne(landmarks) {
             if (!landmarks || landmarks.length < 21) return false;
-            const y8 = landmarks[8].y;
-            const y6 = landmarks[6].y;
-            const y12 = landmarks[12].y;
-            const y10 = landmarks[10].y;
-            const y16 = landmarks[16].y;
-            const y14 = landmarks[14].y;
-            const y20 = landmarks[20].y;
-            const y18 = landmarks[18].y;
-            
-            const indexStraight = y8 < y6 - 0.05;
-            const middleBent = y12 > y10 - 0.02;
-            const ringBent = y16 > y14 - 0.02;
-            const pinkyBent = y20 > y18 - 0.02;
-            
-            return indexStraight && middleBent && ringBent && pinkyBent;
+            try {
+                const y8 = landmarks[8].y;
+                const y6 = landmarks[6].y;
+                const y12 = landmarks[12].y;
+                const y10 = landmarks[10].y;
+                const y16 = landmarks[16].y;
+                const y14 = landmarks[14].y;
+                const y20 = landmarks[20].y;
+                const y18 = landmarks[18].y;
+                
+                const indexStraight = y8 < y6 - 0.05;
+                const middleBent = y12 > y10 - 0.02;
+                const ringBent = y16 > y14 - 0.02;
+                const pinkyBent = y20 > y18 - 0.02;
+                
+                return indexStraight && middleBent && ringBent && pinkyBent;
+            } catch (e) {
+                log('手势1检测出错：' + e);
+                return false;
+            }
         }
 
-        // 新增：检测剪刀手（手势2）——食指和中指伸直，无名指和小指弯曲
+        // 检测剪刀手（手势2）——食指和中指伸直，无名指和小指弯曲
         function isTwoFingerGesture(landmarks) {
             if (!landmarks || landmarks.length < 21) return false;
-            const y8 = landmarks[8].y;   // 食指尖
-            const y6 = landmarks[6].y;   // 食指第二关节
-            const y12 = landmarks[12].y; // 中指尖
-            const y10 = landmarks[10].y; // 中指第二关节
-            const y16 = landmarks[16].y; // 无名指尖
-            const y14 = landmarks[14].y; // 无名指第二关节
-            const y20 = landmarks[20].y; // 小指尖
-            const y18 = landmarks[18].y; // 小指第二关节
+            try {
+                const y8 = landmarks[8].y;   // 食指尖
+                const y6 = landmarks[6].y;   // 食指第二关节
+                const y12 = landmarks[12].y; // 中指尖
+                const y10 = landmarks[10].y; // 中指第二关节
+                const y16 = landmarks[16].y; // 无名指尖
+                const y14 = landmarks[14].y; // 无名指第二关节
+                const y20 = landmarks[20].y; // 小指尖
+                const y18 = landmarks[18].y; // 小指第二关节
 
-            const indexStraight = y8 < y6 - 0.05;      // 食指伸直
-            const middleStraight = y12 < y10 - 0.05;  // 中指伸直
-            const ringBent = y16 > y14 - 0.02;        // 无名指弯曲
-            const pinkyBent = y20 > y18 - 0.02;       // 小指弯曲
+                const indexStraight = y8 < y6 - 0.05;      // 食指伸直
+                const middleStraight = y12 < y10 - 0.05;  // 中指伸直
+                const ringBent = y16 > y14 - 0.02;        // 无名指弯曲
+                const pinkyBent = y20 > y18 - 0.02;       // 小指弯曲
 
-            return indexStraight && middleStraight && ringBent && pinkyBent;
+                return indexStraight && middleStraight && ringBent && pinkyBent;
+            } catch (e) {
+                log('剪刀手检测出错：' + e);
+                return false;
+            }
         }
 
         // 触发自定义图片场景
@@ -754,6 +765,7 @@
             ui.mainText.innerText = '';
             ui.subText.innerText = '';
             ui.gestureHint.classList.remove('hidden');
+            ui.gestureHint.innerText = '✨ 图片已召唤 (去白底) ✨';
             setTimeout(() => ui.gestureHint.classList.add('hidden'), 3000);
         }
 
@@ -1223,52 +1235,59 @@
             });
             
             hands.onResults((results) => {
-                if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    const landmarks = results.multiHandLandmarks[0];
-                    ui.camStatusDot.className = "w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_#4ade80]";
-                    ui.camStatusText.innerText = "DETECTED";
-                    ui.camStatusText.className = "text-[8px] text-green-400 font-mono font-bold";
-                    
-                    // 检测手势1 (食指竖起)
-                    if (isGestureOne(landmarks)) {
-                        if (currentState !== STATE.CUSTOM_IMAGE) {
-                            transitionToCustomImage();
+                // 使用 try-catch 防止未捕获的异常导致 MediaPipe 停止
+                try {
+                    if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                        const landmarks = results.multiHandLandmarks[0];
+                        ui.camStatusDot.className = "w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_#4ade80]";
+                        ui.camStatusText.innerText = "DETECTED";
+                        ui.camStatusText.className = "text-[8px] text-green-400 font-mono font-bold";
+                        
+                        // 检测手势1 (食指竖起)
+                        if (isGestureOne(landmarks)) {
+                            if (currentState !== STATE.CUSTOM_IMAGE) {
+                                transitionToCustomImage();
+                            }
                         }
-                    }
-                    // 检测剪刀手 (手势2) 返回蛋糕场景 —— 已修改
-                    else if (isTwoFingerGesture(landmarks)) {
-                        if (currentState === STATE.CUSTOM_IMAGE) {
-                            returnToCake();
+                        // 检测剪刀手 (手势2) 返回蛋糕场景
+                        else if (isTwoFingerGesture(landmarks)) {
+                            if (currentState === STATE.CUSTOM_IMAGE) {
+                                returnToCake();
+                            }
                         }
-                    }
-                    else {
-                        if (currentState === STATE.IDLE) {
-                            startSequence();
+                        else {
+                            if (currentState === STATE.IDLE) {
+                                startSequence();
+                            }
                         }
-                    }
-                    
-                    if (interactionMode === 1 && currentState !== STATE.CUSTOM_IMAGE) {
-                        const currentHandX = landmarks[9].x; 
-                        const delta = currentHandX - lastHandX;
-                        if (Math.abs(delta) > 0.002) {
-                            rotationVelocity += delta * -0.4; 
+                        
+                        if (interactionMode === 1 && currentState !== STATE.CUSTOM_IMAGE) {
+                            const currentHandX = landmarks[9].x; 
+                            const delta = currentHandX - lastHandX;
+                            if (Math.abs(delta) > 0.002) {
+                                rotationVelocity += delta * -0.4; 
+                            }
+                            lastHandX = currentHandX;
                         }
-                        lastHandX = currentHandX;
+                    } else {
+                        ui.camStatusDot.className = "w-1.5 h-1.5 rounded-full bg-red-500";
+                        ui.camStatusText.innerText = "NO HAND";
+                        ui.camStatusText.className = "text-[8px] text-red-400 font-mono";
                     }
-                } else {
-                    ui.camStatusDot.className = "w-1.5 h-1.5 rounded-full bg-red-500";
-                    ui.camStatusText.innerText = "NO HAND";
-                    ui.camStatusText.className = "text-[8px] text-red-400 font-mono";
-                }
 
-                const ctx = document.getElementById('output_canvas').getContext('2d');
-                ctx.clearRect(0, 0, 160, 120);
-                if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                     for (const l of results.multiHandLandmarks) {
-                         if (typeof drawConnectors !== 'undefined') {
-                             drawConnectors(ctx, l, HAND_CONNECTIONS, {color: '#ff69b4', lineWidth: 2});
-                         }
-                     }
+                    // 绘制手部骨架（如果库可用）
+                    const ctx = document.getElementById('output_canvas').getContext('2d');
+                    ctx.clearRect(0, 0, 160, 120);
+                    if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                        for (const l of results.multiHandLandmarks) {
+                            if (typeof drawConnectors !== 'undefined') {
+                                drawConnectors(ctx, l, HAND_CONNECTIONS, {color: '#ff69b4', lineWidth: 2});
+                            }
+                        }
+                    }
+                } catch (e) {
+                    log('MediaPipe onResults 回调出错：' + e);
+                    // 即使出错也不让摄像头停止，继续下一帧
                 }
             });
 
