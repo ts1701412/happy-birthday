@@ -183,8 +183,8 @@
             <h1 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">Happy Birthday</h1>
             <div class="space-y-4 text-gray-200 text-lg mb-8 font-light">
                 <p>👋 <b>對著鏡頭 舉起雙手</b> 喚醒魔法</p>
-                <p>👉 <b>竖起食指 (手势1)</b></p>
-                <p>✊ <b>握拳</b> 可返回蛋糕场景</p>
+                <p>👉 <b>竖起食指 (手势1)</b> 召唤图片粒子</p>
+                <p>✌️ <b>剪刀手 (手势2)</b> 返回蛋糕场景</p>
                 <p>💨 <b>持續吹氣</b> 許下心願</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
@@ -300,8 +300,7 @@
         </div>
     </div>
 
-    <!-- 手势提示浮层 -->
-    <div id="gesture-hint" class="gesture-hint hidden">👉 检测到手势1 · 召唤图片粒子 (已去底)</div>
+
 
     <script>
         // --- 調適日志工具 ---
@@ -714,13 +713,24 @@
             return indexStraight && middleBent && ringBent && pinkyBent;
         }
 
-        function isFistGesture(landmarks) {
+        // 新增：检测剪刀手（手势2）——食指和中指伸直，无名指和小指弯曲
+        function isTwoFingerGesture(landmarks) {
             if (!landmarks || landmarks.length < 21) return false;
-            const indexBent = landmarks[8].y >= landmarks[6].y - 0.02;
-            const middleBent = landmarks[12].y >= landmarks[10].y - 0.02;
-            const ringBent = landmarks[16].y >= landmarks[14].y - 0.02;
-            const pinkyBent = landmarks[20].y >= landmarks[18].y - 0.02;
-            return indexBent && middleBent && ringBent && pinkyBent;
+            const y8 = landmarks[8].y;   // 食指尖
+            const y6 = landmarks[6].y;   // 食指第二关节
+            const y12 = landmarks[12].y; // 中指尖
+            const y10 = landmarks[10].y; // 中指第二关节
+            const y16 = landmarks[16].y; // 无名指尖
+            const y14 = landmarks[14].y; // 无名指第二关节
+            const y20 = landmarks[20].y; // 小指尖
+            const y18 = landmarks[18].y; // 小指第二关节
+
+            const indexStraight = y8 < y6 - 0.05;      // 食指伸直
+            const middleStraight = y12 < y10 - 0.05;  // 中指伸直
+            const ringBent = y16 > y14 - 0.02;        // 无名指弯曲
+            const pinkyBent = y20 > y18 - 0.02;       // 小指弯曲
+
+            return indexStraight && middleStraight && ringBent && pinkyBent;
         }
 
         // 触发自定义图片场景
@@ -747,10 +757,10 @@
             setTimeout(() => ui.gestureHint.classList.add('hidden'), 3000);
         }
 
-        // 返回蛋糕场景（通过握拳）
+        // 返回蛋糕场景（通过剪刀手）
         function returnToCake() {
             if (currentState !== STATE.CUSTOM_IMAGE) return;
-            log('握拳手势触发: 返回蛋糕场景');
+            log('剪刀手手势触发: 返回蛋糕场景');
             showCake();
             ui.gestureHint.classList.add('hidden');
         }
@@ -1225,8 +1235,8 @@
                             transitionToCustomImage();
                         }
                     }
-                    // 检测握拳 (返回蛋糕) —— 这就是您需要的功能
-                    else if (isFistGesture(landmarks)) {
+                    // 检测剪刀手 (手势2) 返回蛋糕场景 —— 已修改
+                    else if (isTwoFingerGesture(landmarks)) {
                         if (currentState === STATE.CUSTOM_IMAGE) {
                             returnToCake();
                         }
