@@ -168,10 +168,9 @@
         <b>請在 VS Code 中安裝 "Live Server" 插件并使用 "Open with Live Server" 運行。</b>
     </div>
 
-    <!-- ================= 背景音乐 ================= -->
-    <!-- 已将音乐源改为 my-song.mp3，请确保文件位于 ./src/my-song.mp3 -->
+    <!-- 背景音乐（初始为主音乐） -->
     <audio id="bgm" loop>
-        <source src="./src/my-song.mp3" type="audio/mpeg">
+        <source src="./src/happy-birthday-155461.mp3" type="audio/mpeg">
     </audio>
 
     <video class="input_video" playsinline></video>
@@ -321,6 +320,10 @@
         if (window.location.protocol === 'file:') {
             document.getElementById('protocol-warning').style.display = 'block';
         }
+
+        // --- 音乐源定义 ---
+        const MAIN_MUSIC_SRC = './src/happy-birthday-155461.mp3';
+        const KITTY_MUSIC_SRC = './src/my-song.mp3';
 
         // --- 全局變量與配置 ---
         const CAKE_THEME = { bottom: "#800080", top: "#DDA0DD", cream: "#FFFFE0" };
@@ -746,6 +749,21 @@
             }
         }
 
+        // ========== 音乐切换函数 ==========
+        function switchMusicForState(state) {
+            // 根据状态决定要播放的音乐
+            const targetSrc = (state === STATE.CUSTOM_IMAGE) ? KITTY_MUSIC_SRC : MAIN_MUSIC_SRC;
+            // 如果当前src已经是要播放的，则不做任何操作
+            if (bgm.src.includes(targetSrc)) {
+                return;
+            }
+            // 否则切换
+            bgm.pause();
+            bgm.src = targetSrc;
+            bgm.load();
+            bgm.play().catch(e => log('自动播放被阻止：' + e));
+        }
+
         // 触发自定义图片场景
         function transitionToCustomImage() {
             if (currentState === STATE.CUSTOM_IMAGE) return;
@@ -758,6 +776,7 @@
             }
             log('手势1/键盘1触发: 进入自定义图片粒子星空 (已去白底)');
             currentState = STATE.CUSTOM_IMAGE;
+            switchMusicForState(currentState); // 切换音乐
             particleSystem.rotation.y = 0; // 保持静止
             transitionTo('custom');
             ui.topBanner.classList.add('hidden');
@@ -776,7 +795,6 @@
             if (currentState !== STATE.CUSTOM_IMAGE) return;
             log('剪刀手手势触发: 返回蛋糕场景');
             showCake();
-            ui.gestureHint.classList.add('hidden');
         }
 
         // 更新粒子动画
@@ -932,6 +950,7 @@
         function showCake() {
             log('展示蛋糕，開啟吹氣檢測');
             currentState = STATE.BLOWING;
+            switchMusicForState(currentState); // 切换为主音乐
             transitionTo('cake');
             ui.settingsPanel.style.display = 'flex';
             ui.mainText.innerText = "";
@@ -946,6 +965,7 @@
         function successCelebration() {
             log('許愿成功！播放慶祝動畫');
             currentState = STATE.CELEBRATION;
+            switchMusicForState(currentState); // 庆祝状态也属于主场景，保持主音乐
             ui.statusText.innerText = "WISH GRANTED";
             ui.blowMeter.style.opacity = '0';
             ui.blowHint.style.opacity = '0';
@@ -1068,10 +1088,13 @@
             ui.floatingGiftBtn.classList.remove('hidden');
             
             if (currentState === STATE.CELEBRATION) {
+                // 庆祝状态关闭卡片，回到蛋糕场景
                 transitionTo('cake');
                 ui.statusText.innerText = "INTERACTIVE MODE: DRAG TO ROTATE";
                 ui.topBanner.classList.remove('hidden');
                 interactionMode = 1;
+                // 音乐已经在蛋糕状态中，但确保为主音乐（当前可能是主音乐，保持不变）
+                switchMusicForState(STATE.BLOWING);
             }
         });
 
@@ -1199,6 +1222,8 @@
         }
 
         function fadeAudioIn() {
+            // 初始进入时播放主音乐
+            bgm.src = MAIN_MUSIC_SRC;
             const playPromise = bgm.play();
             if (playPromise !== undefined) {
                 playPromise.then(_ => {
@@ -1289,7 +1314,6 @@
                     }
                 } catch (e) {
                     log('MediaPipe onResults 回调出错：' + e);
-                    // 即使出错也不让摄像头停止，继续下一帧
                 }
             });
 
