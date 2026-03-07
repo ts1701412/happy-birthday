@@ -321,9 +321,11 @@
             document.getElementById('protocol-warning').style.display = 'block';
         }
 
-        // --- 音乐源定义 ---
+        // --- 音乐源和音量定义 ---
         const MAIN_MUSIC_SRC = './src/happy-birthday-155461.mp3';
         const KITTY_MUSIC_SRC = './src/my-song.mp3';
+        const MAIN_VOLUME = 0.5;      // 主场景（蛋糕/吹气）音量
+        const KITTY_VOLUME = 0.8;      // 手势1场景（Kitty）音量，调大一点
 
         // --- 全局變量與配置 ---
         const CAKE_THEME = { bottom: "#800080", top: "#DDA0DD", cream: "#FFFFE0" };
@@ -749,18 +751,20 @@
             }
         }
 
-        // ========== 音乐切换函数 ==========
+        // ========== 音乐切换函数（附带音量调整）==========
         function switchMusicForState(state) {
-            // 根据状态决定要播放的音乐
             const targetSrc = (state === STATE.CUSTOM_IMAGE) ? KITTY_MUSIC_SRC : MAIN_MUSIC_SRC;
-            // 如果当前src已经是要播放的，则不做任何操作
-            if (bgm.src.includes(targetSrc)) {
-                return;
+            const targetVolume = (state === STATE.CUSTOM_IMAGE) ? KITTY_VOLUME : MAIN_VOLUME;
+
+            if (bgm.src.includes(targetSrc) && Math.abs(bgm.volume - targetVolume) < 0.01) {
+                return; // 已经是指定音乐且音量正确，不做操作
             }
-            // 否则切换
+
+            // 切换音乐
             bgm.pause();
             bgm.src = targetSrc;
             bgm.load();
+            bgm.volume = targetVolume; // 直接设置音量
             bgm.play().catch(e => log('自动播放被阻止：' + e));
         }
 
@@ -776,7 +780,7 @@
             }
             log('手势1/键盘1触发: 进入自定义图片粒子星空 (已去白底)');
             currentState = STATE.CUSTOM_IMAGE;
-            switchMusicForState(currentState); // 切换音乐
+            switchMusicForState(currentState); // 切换音乐并调整音量
             particleSystem.rotation.y = 0; // 保持静止
             transitionTo('custom');
             ui.topBanner.classList.add('hidden');
@@ -950,7 +954,7 @@
         function showCake() {
             log('展示蛋糕，開啟吹氣檢測');
             currentState = STATE.BLOWING;
-            switchMusicForState(currentState); // 切换为主音乐
+            switchMusicForState(currentState); // 切换为主音乐并恢复音量0.5
             transitionTo('cake');
             ui.settingsPanel.style.display = 'flex';
             ui.mainText.innerText = "";
@@ -965,7 +969,7 @@
         function successCelebration() {
             log('許愿成功！播放慶祝動畫');
             currentState = STATE.CELEBRATION;
-            switchMusicForState(currentState); // 庆祝状态也属于主场景，保持主音乐
+            switchMusicForState(currentState); // 庆祝状态也属于主场景，保持主音乐音量0.5
             ui.statusText.innerText = "WISH GRANTED";
             ui.blowMeter.style.opacity = '0';
             ui.blowHint.style.opacity = '0';
@@ -1093,7 +1097,7 @@
                 ui.statusText.innerText = "INTERACTIVE MODE: DRAG TO ROTATE";
                 ui.topBanner.classList.remove('hidden');
                 interactionMode = 1;
-                // 音乐已经在蛋糕状态中，但确保为主音乐（当前可能是主音乐，保持不变）
+                // 音乐已经在蛋糕状态中，但确保为主音乐
                 switchMusicForState(STATE.BLOWING);
             }
         });
@@ -1222,7 +1226,7 @@
         }
 
         function fadeAudioIn() {
-            // 初始进入时播放主音乐
+            // 初始进入时播放主音乐，音量渐入至0.5
             bgm.src = MAIN_MUSIC_SRC;
             const playPromise = bgm.play();
             if (playPromise !== undefined) {
@@ -1236,7 +1240,10 @@
             let vol = 0;
             const fade = setInterval(() => {
                 vol += 0.05;
-                if(vol >= 0.5) { vol = 0.5; clearInterval(fade); }
+                if(vol >= MAIN_VOLUME) { 
+                    vol = MAIN_VOLUME; 
+                    clearInterval(fade); 
+                }
                 bgm.volume = vol;
             }, 200);
         }
