@@ -168,8 +168,11 @@
         <b>請在 VS Code 中安裝 "Live Server" 插件并使用 "Open with Live Server" 運行。</b>
     </div>
 
+    <!-- ================= 背景音乐 ================= -->
+    <!-- 替换 src 路径为您自己的歌曲文件（例如 ./src/my-song.mp3） -->
     <audio id="bgm" loop>
         <source src="./src/happy-birthday-155461.mp3" type="audio/mpeg">
+        <!-- 如果您的歌曲是其他格式，请修改 type 属性，例如 type="audio/ogg" -->
     </audio>
 
     <video class="input_video" playsinline></video>
@@ -300,7 +303,8 @@
         </div>
     </div>
 
-
+    <!-- 手势提示浮层（无文字版本） -->
+    <div id="gesture-hint" class="gesture-hint hidden"></div>
 
     <script>
         // --- 調適日志工具 ---
@@ -608,7 +612,7 @@
                     }
                 }
             } else if (type === 'cake') {
-                // 蛋糕形状生成（略，保持原样）
+                // 蛋糕形状生成
                 const layers = [{y: -16, r: 18, h: 10, type: 'bottom'}, {y: -6,  r: 13, h: 8,  type: 'top'}];
                 layers.forEach(l => {
                     for(let i=0; i<(IS_MOBILE?800:1500); i++) {
@@ -764,6 +768,7 @@
             ui.mainText.innerText = '';
             ui.subText.innerText = '';
             ui.gestureHint.classList.remove('hidden');
+            ui.gestureHint.innerText = '✨ 图片已召唤 (去白底) ✨';
             setTimeout(() => ui.gestureHint.classList.add('hidden'), 3000);
         }
 
