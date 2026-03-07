@@ -184,8 +184,8 @@
             <h1 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">Happy Birthday</h1>
             <div class="space-y-4 text-gray-200 text-lg mb-8 font-light">
                 <p>👋 <b>對著鏡頭 舉起雙手</b> 喚醒魔法</p>
-                <p>👉 <b>竖起食指 (手势1)</b> 召唤图片粒子</p>
-                <p>✌️ <b>剪刀手 (手势2)</b> 返回蛋糕场景</p>
+                <p>👉 <b>豎起食指 </b>在Hello Kitty粒子场景時 </p>
+                <p>✌️ <b>剪刀手</b> 返回蛋糕场景</p>
                 <p>💨 <b>持續吹氣</b> 許下心願</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
@@ -778,7 +778,7 @@
                 setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
                 return;
             }
-            log('手势1/键盘1触发: 进入自定义图片粒子星空 (已去白底)');
+            log;
             currentState = STATE.CUSTOM_IMAGE;
             switchMusicForState(currentState); // 切换音乐并调整音量
             particleSystem.rotation.y = 0; // 保持静止
@@ -790,7 +790,6 @@
             ui.mainText.innerText = '';
             ui.subText.innerText = '';
             ui.gestureHint.classList.remove('hidden');
-            ui.gestureHint.innerText = '✨ 图片已召唤 (去白底) ✨';
             setTimeout(() => ui.gestureHint.classList.add('hidden'), 3000);
         }
 
