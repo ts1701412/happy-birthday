@@ -177,7 +177,7 @@
                 <p>👋 <b>對著鏡頭 舉起雙手</b> 喚醒魔法</p>
                 <p>☝️ <b>豎起食指 </b>可進入Hello Kitty場景 </p>
                 <p>    <b>在Hello Kitty粒子場景時</p>
-                <p>✌️ <b>剪刀手</b> 觸發慶祝效果（不彈卡片）</p>
+                <p>✌️ <b>剪刀手</b> 觸發蛋糕慶祝（不彈卡片）</p>
                 <p>💨 <b>持續吹氣</b> 許下心願（彈卡片）</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
@@ -781,11 +781,20 @@
             setTimeout(() => ui.gestureHint.classList.add('hidden'), 3000);
         }
 
-        // 在Kitty场景中检测到剪刀手时，直接进入庆祝场景（不显示卡片）
+        // 在Kitty场景中检测到剪刀手时，先切换到蛋糕形态，再进入庆祝场景（不显示卡片）
         function triggerCelebrationFromKitty() {
             if (currentState !== STATE.CUSTOM_IMAGE) return;
-            log('剪刀手手势触发: 从Kitty场景进入庆祝（无卡片）');
-            // 调用庆祝函数，传入 false 表示不显示卡片
+            log('剪刀手手势触发: 从Kitty场景切换到蛋糕并庆祝（无卡片）');
+            
+            // 先切换到蛋糕形态（但不进入吹气模式）
+            // 临时保存当前状态，切换蛋糕后立即庆祝
+            // 注意：transitionTo('cake') 会改变粒子目标，但不改变 currentState
+            // 我们手动设置状态为 BLOWING 再调用 transitionTo('cake') 以加载蛋糕形状
+            currentState = STATE.BLOWING; // 临时状态，只是为了正确加载蛋糕粒子
+            switchMusicForState(currentState); // 切换为主音乐
+            transitionTo('cake');
+            
+            // 然后立即调用庆祝函数，传入 false 不显示卡片
             successCelebration(false);
         }
 
@@ -793,7 +802,8 @@
         function successCelebration(showCard = true) {
             log('許愿成功！播放慶祝動畫');
             currentState = STATE.CELEBRATION;
-            switchMusicForState(currentState); // 庆祝状态保持主音乐
+            // 音乐已在触发前切换，但以防万一再调用一次
+            switchMusicForState(currentState);
             ui.statusText.innerText = "WISH GRANTED";
             ui.blowMeter.style.opacity = '0';
             ui.blowHint.style.opacity = '0';
@@ -1272,7 +1282,7 @@
                                 transitionToCustomImage();
                             }
                         }
-                        // 检测剪刀手 (手势2) —— 在Kitty场景中触发庆祝（无卡片）
+                        // 检测剪刀手 (手势2) —— 在Kitty场景中触发蛋糕庆祝（无卡片）
                         else if (isTwoFingerGesture(landmarks)) {
                             triggerCelebrationFromKitty();
                         }
