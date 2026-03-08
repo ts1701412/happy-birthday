@@ -4,7 +4,7 @@
     <link rel="icon" type="image/png" href="../src/icon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>小慧生日快樂</title>
+    <title>Happy Birthday · 粒子幻境</title>      
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Three.js -->
@@ -19,7 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
 
     <style>
-        /* 原有样式保持不变 */
+        /* 原有样式保持不变，仅微调 */
         :root { --bg-gradient: radial-gradient(circle at center, #1a0b1a 0%, #000000 100%); }
         body { 
             margin: 0; overflow: hidden; 
@@ -171,15 +171,14 @@
     <!-- 啟動頁 -->
     <div id="start-overlay">
         <div class="text-center max-w-md p-8 glass-panel start-card mx-4 animate-float">
-            <h1 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">小慧<br>生日快樂</h1>
-            <p class="text-2xl text-pink-200/90 font-light tracking-wide mb-6">這份驚喜，為你獨家定製</p>
+            <h1 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">Happy Birthday</h1>
             <div class="space-y-4 text-gray-200 text-lg mb-8 font-light">
                 <p> 進入場景需要准許麥克風跟設想頭權限喔!</p>
-                <p>👋 <b>舉起手 或 點擊屏幕</b> 進入主場景</p>
-                <p>💨 <b>對麥克風吹氣 或 長按屏幕</b> 許願</p>
-                <p>✌️ <b>剪刀手</b> 返回蛋糕場景（需先慶祝）</p>
-                <p>👆 <b>雙擊屏幕</b> 在慶祝場景進入Hello Kitty輪播</p>
-                <p>👇 <b>單擊屏幕</b> 在Kitty場景返回慶祝</p>
+                <p>👋 <b>對著鏡頭 舉起手</b> 喚醒魔法</p>
+                <p>☝️ <b>豎起食指 </b>可進入Hello Kitty場景 (輪播圖片)</p>
+                <p>✌️ <b>剪刀手</b> 觸發蛋糕慶祝 (或雙擊返回)</p>
+                <p>💨 <b>持續吹氣</b> 許下心願</p>
+                <p>🎉 慶祝場景单击屏幕 → 進入下一张图片场景<br>🎆 图片场景双击屏幕 → 返回慶祝</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
                 進入魔法世界
@@ -188,15 +187,15 @@
         </div>
     </div>
 
-    <div id="blow-hint"><p class="text-lg font-bold text-pink-200 mb-1">🎤 對著麥克風吹氣 或 長按屏幕</p><p class="text-xs text-gray-400">(如果麥克風不靈可長按屏幕)</p></div>
+    <div id="blow-hint"><p class="text-lg font-bold text-pink-200 mb-1">🎤 對著麥克風吹氣</p><p class="text-xs text-gray-400">(如果麥克風不靈手機長按屏幕)</p></div>
     <div id="blow-meter-container"><div id="blow-meter-bar"></div></div>
 
     <div id="top-banner" class="hidden">
-        <h1 class="text-6xl md:text-8xl banner-text">小慧生日快樂</h1>
+        <h1 class="text-6xl md:text-8xl banner-text">Happy Birthday</h1>
         <p class="text-pink-200/70 text-lg mt-2 tracking-widest uppercase">Best Wishes for You</p>
     </div>
 
-    <!-- UI 層（已移除调色盘按钮和面板） -->
+    <!-- UI 層（已精简） -->
     <div id="ui-layer" style="display: none;">
         <div class="flex justify-between items-start w-full">
             <div class="glass-panel px-4 py-2">
@@ -204,19 +203,16 @@
                 <span id="status-text" class="text-xs md:text-sm text-gray-300 tracking-wider">SYSTEM READY</span>
             </div>
             <div class="flex gap-2">
-                <!-- 已移除调色盘按钮，仅保留音乐按钮 -->
                 <button id="music-btn" class="interactive-element p-3 glass-panel hover:bg-white/20 transition rounded-full active:scale-90">🎵</button>
             </div>
         </div>
-        
-        <!-- 设置面板已完全移除 -->
 
         <div id="center-instruction" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none w-full z-0">
             <div class="flex items-center justify-center gap-4 mb-2">
                 <span id="hand-icon" class="text-6xl animate-bounce">👋</span>
                 <h2 id="instruction-text" class="text-6xl md:text-8xl font-bold text-white neon-pulse transition-all duration-700">舉起手</h2>
             </div>
-            <p id="sub-instruction" class="mt-4 text-xl md:text-2xl text-pink-200/80 font-light tracking-[0.3em]">對準鏡頭進入主場景</p>
+            <p id="sub-instruction" class="mt-4 text-xl md:text-2xl text-pink-200/80 font-light tracking-[0.3em]">對準鏡頭讓魔法發生</p>
             <p id="auto-countdown-text" class="mt-4 text-sm text-pink-200/60 font-light tracking-wider animate-pulse hidden"></p>
         </div>
 
@@ -250,7 +246,6 @@
                     <div class="bg-black/80 rounded-[1rem] p-6 h-full flex flex-col backdrop-blur-md">
                         <div class="w-full aspect-[4/3] bg-gray-800 rounded-lg mb-6 overflow-hidden relative border border-white/10 shadow-inner">
                             <img src="./src/birthday-card.jpg" alt="Gift" class="w-full h-full object-cover">
-                            <div class="absolute bottom-3 left-4 text-white/90 font-handwriting text-2xl">小慧生日快樂！</div>
                         </div>
                         <div class="text-center mt-auto mb-8">
                             <p class="text-gray-300 mb-6 font-light leading-relaxed">這不僅僅是一場代碼烟花，<br>更是為你準備的生日时刻。</p>
@@ -290,10 +285,11 @@
         </div>
     </div>
 
-    <!-- 手势提示浮层（无文字版本） -->
+    <!-- 手势提示浮层（轻量） -->
     <div id="gesture-hint" class="gesture-hint hidden"></div>
 
     <script>
+        (function() {
         // --- 調適日志工具 ---
         const debugConsole = document.getElementById('debug-console');
         function log(msg) {
@@ -309,15 +305,6 @@
         if (window.location.protocol === 'file:') {
             document.getElementById('protocol-warning').style.display = 'block';
         }
-
-        // --- 自定义图片列表（用于Kitty场景轮播）---
-        const CUSTOM_IMAGES = [
-            './src/1.png',   // Hello Kitty
-            './src/2.png',   // 图片2
-            './src/3.png',   // 图片3
-            './src/4.png'    // 图片4
-        ];
-        const CELEBRATION_IMAGE_INTERVAL = 5000; // 5秒切换
 
         // --- 音乐源和音量定义 ---
         const MAIN_MUSIC_SRC = './src/happy-birthday-155461.mp3';
@@ -355,14 +342,6 @@
         let audioContext, analyser;
         const bgm = document.getElementById('bgm');
 
-        // Kitty场景图片轮播定时器
-        let kittyImageTimer = null;
-        let currentKittyImageIndex = 0;
-
-        // 双击检测相关
-        let clickTimer = null;
-        const DOUBLE_CLICK_DELAY = 300; // 毫秒
-
         const ui = {
             startOverlay: document.getElementById('start-overlay'),
             uiLayer: document.getElementById('ui-layer'),
@@ -380,7 +359,6 @@
             cardContainer: document.getElementById('flip-card-container'), 
             nextBtn: document.getElementById('next-surprise-btn'),
             closeBtn: document.getElementById('close-card-btn'),
-            // 调色盘相关已移除
             topBanner: document.getElementById('top-banner'),
             startBtn: document.getElementById('start-btn'),
             loadingText: document.getElementById('loading-text'),
@@ -394,6 +372,104 @@
             autoCountdownText: document.getElementById('auto-countdown-text'),
             gestureHint: document.getElementById('gesture-hint')
         };
+
+        // ---------- 新增：图片轮播相关 ----------
+        const IMAGE_LIST = [
+            './src/1.png',
+            './src/2.png',   // 请确保这些图片存在，或替换为你实际的文件名
+            './src/3.png',
+            './src/4.png'
+        ];
+        let currentImageIndex = 0;
+        let isLoadingImage = false; // 防止重复加载
+
+        // 加载下一张图片并更新shapeCache['custom']，完成后自动切换到该形态
+        function loadNextCustomImage() {
+            if (isLoadingImage) return;
+            isLoadingImage = true;
+            // 显示加载提示
+            ui.gestureHint.innerText = '✨ 加载下一张图片... ✨';
+            ui.gestureHint.classList.remove('hidden');
+            
+            const nextIndex = (currentImageIndex + 1) % IMAGE_LIST.length;
+            const src = IMAGE_LIST[nextIndex];
+            log(`加载图片: ${src}`);
+            
+            loadCustomImagePoints(src, Math.floor(VISUAL_CONFIG.particleCount * 0.7)).then(points => {
+                shapeCache['custom'] = points;
+                currentImageIndex = nextIndex;
+                isLoadingImage = false;
+                ui.gestureHint.innerText = '✅ 图片已切换';
+                setTimeout(() => ui.gestureHint.classList.add('hidden'), 1500);
+                // 如果当前状态是CUSTOM_IMAGE，立即应用新图片
+                if (currentState === STATE.CUSTOM_IMAGE) {
+                    transitionTo('custom');
+                }
+            }).catch(err => {
+                log('图片加载失败，使用后备爱心: ' + err);
+                shapeCache['custom'] = generateFallbackPoints(Math.floor(VISUAL_CONFIG.particleCount * 0.7));
+                isLoadingImage = false;
+                ui.gestureHint.innerText = '⚠️ 加载失败，使用默认';
+                setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
+                if (currentState === STATE.CUSTOM_IMAGE) {
+                    transitionTo('custom');
+                }
+            });
+        }
+
+        // 修改 transitionToCustomImage，每次进入时自动加载下一张（如果尚未加载则立即加载）
+        function transitionToCustomImage() {
+            if (currentState === STATE.CUSTOM_IMAGE) return; // 已在场景中，不重复进入（但我们可以允许双击返回，所以这里保持不变）
+            if (!shapeCache['custom']) {
+                // 如果没有缓存，先加载默认（索引0）
+                if (!isLoadingImage) {
+                    isLoadingImage = true;
+                    ui.gestureHint.innerText = '加载初始图片...';
+                    ui.gestureHint.classList.remove('hidden');
+                    loadCustomImagePoints(IMAGE_LIST[0], Math.floor(VISUAL_CONFIG.particleCount * 0.7)).then(points => {
+                        shapeCache['custom'] = points;
+                        currentImageIndex = 0;
+                        isLoadingImage = false;
+                        ui.gestureHint.classList.add('hidden');
+                        // 再调用自身
+                        transitionToCustomImage();
+                    }).catch(e => {
+                        shapeCache['custom'] = generateFallbackPoints(Math.floor(VISUAL_CONFIG.particleCount * 0.7));
+                        isLoadingImage = false;
+                        transitionToCustomImage();
+                    });
+                }
+                return;
+            }
+            log('手势1触发: 进入自定义图片场景 (轮播)');
+            currentState = STATE.CUSTOM_IMAGE;
+            switchMusicForState(currentState);
+            particleSystem.rotation.y = 0;
+            transitionTo('custom');
+            ui.topBanner.classList.add('hidden');
+            ui.blowMeter.style.opacity = '0';
+            ui.blowHint.style.opacity = '0';
+            ui.mainText.innerText = '';
+            ui.subText.innerText = '';
+            ui.gestureHint.classList.remove('hidden');
+            ui.gestureHint.innerText = `✨ 图片场景 ${currentImageIndex+1}/${IMAGE_LIST.length} ✨`;
+            setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
+            
+            // 预加载下一张（可选）
+            // 不自动预加载，以免干扰，等待单击时再加载
+        }
+
+        // 在Kitty场景中检测到剪刀手或双击时，触发庆祝（无卡片）
+        function triggerCelebrationFromKitty() {
+            if (currentState !== STATE.CUSTOM_IMAGE) return;
+            log('剪刀手/双击触发: 从Kitty场景切换到蛋糕并庆祝（无卡片）');
+            currentState = STATE.BLOWING; // 临时，为了加载蛋糕
+            switchMusicForState(currentState);
+            transitionTo('cake');
+            // 调用庆祝，不显示卡片
+            successCelebration(false);
+        }
+        // ----------------------------------------
 
         // 初始化 Three.js
         initThree();
@@ -411,9 +487,16 @@
             
             preloadBasicShapes();
             
-            // 加载多张自定义图片（用于Kitty轮播）
-            loadMultipleCustomImages();
-
+            // 预加载第一张图片（但不阻塞）
+            loadCustomImagePoints(IMAGE_LIST[0], Math.floor(VISUAL_CONFIG.particleCount * 0.7)).then(points => {
+                shapeCache['custom'] = points;
+                currentImageIndex = 0;
+                if (ui.loadingText) ui.loadingText.style.display = 'none';
+            }).catch(err => {
+                log('图片加载失败，使用默认爱心后备');
+                shapeCache['custom'] = generateFallbackPoints(Math.floor(VISUAL_CONFIG.particleCount * 0.7));
+            });
+            
             createParticles();
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
@@ -449,77 +532,73 @@
                 onMove(e.touches[0].clientX);
             }, {passive: false});
             window.addEventListener('touchend', onEnd);
-            
-            // 全局点击监听（用于双击检测）
-            document.addEventListener('click', handleGlobalClick);
-            document.addEventListener('touchstart', handleTouchStart, {passive: false});
-            document.addEventListener('touchend', handleTouchEnd, {passive: false});
 
+            // ---------- 新增：单击/双击监听 (用于场景切换) ----------
+            let clickTimer = null;
+            const handleClick = (e) => {
+                // 防止点击按钮等交互元素时触发
+                if (e.target.closest('button') || e.target.closest('.safe-click-area')) return;
+                
+                if (currentState === STATE.CELEBRATION) {
+                    // 庆祝场景单击 -> 进入下一张图片场景
+                    if (clickTimer) {
+                        clearTimeout(clickTimer);
+                        clickTimer = null;
+                        // 如果双击，不触发单击动作
+                    } else {
+                        clickTimer = setTimeout(() => {
+                            // 再次检查状态，确保还在庆祝场景
+                            if (currentState === STATE.CELEBRATION) {
+                                log('庆祝场景单击，进入图片场景');
+                                // 先加载下一张图片再进入
+                                loadNextCustomImage(); // 这会异步加载，并更新缓存
+                                // 但transitionToCustomImage会使用最新的缓存，我们需要等待加载完成？
+                                // 简单起见：先加载，然后调用transitionToCustomImage（但transitionToCustomImage会检查缓存，如果正在加载会等待）
+                                // 我们直接调用transitionToCustomImage，其内部会处理加载状态
+                                transitionToCustomImage();
+                            }
+                            clickTimer = null;
+                        }, 250); // 双击间隔
+                    }
+                }
+            };
+
+            const handleDblClick = (e) => {
+                if (e.target.closest('button') || e.target.closest('.safe-click-area')) return;
+                if (currentState === STATE.CUSTOM_IMAGE) {
+                    log('图片场景双击，返回庆祝场景');
+                    triggerCelebrationFromKitty();
+                }
+                // 取消单击计时器
+                if (clickTimer) {
+                    clearTimeout(clickTimer);
+                    clickTimer = null;
+                }
+            };
+
+            container.addEventListener('click', handleClick);
+            container.addEventListener('dblclick', handleDblClick);
+            // 移动端双指双击可能不好用，我们同时用touch事件模拟双击
+            let lastTouchEnd = 0;
+            container.addEventListener('touchend', (e) => {
+                if (e.target.closest('button') || e.target.closest('.safe-click-area')) return;
+                const now = Date.now();
+                if (now - lastTouchEnd < 300) {
+                    // 双击
+                    e.preventDefault();
+                    handleDblClick(e);
+                } else {
+                    // 单击
+                    handleClick(e);
+                }
+                lastTouchEnd = now;
+            });
+            // ------------------------------------------------
+            
             render();
         }
 
-        // 触摸长按处理（用于吹气积累）
-        function handleTouchStart(e) {
-            if (currentState === STATE.BLOWING && !e.target.closest('button') && !e.target.closest('input')) {
-                isTouching = true;
-            }
-        }
-        function handleTouchEnd() {
-            isTouching = false;
-        }
-
-        // 处理全局点击（双击/单击）
-        function handleGlobalClick(e) {
-            if (e.target.closest('button')) return; // 按钮由自己的事件处理
-
-            if (currentState === STATE.IDLE) {
-                // IDLE状态：单击进入蛋糕吹气场景
-                showCake();
-            }
-            else if (currentState === STATE.BLOWING) {
-                // 蛋糕吹气场景：单击无效（由吹气/长按控制）
-                // 不做任何事
-            }
-            else if (currentState === STATE.CELEBRATION) {
-                // 庆祝场景：双击进入Kitty，单击无效
-                if (clickTimer) {
-                    // 第二次点击，取消定时器，执行双击
-                    clearTimeout(clickTimer);
-                    clickTimer = null;
-                    // 双击进入Kitty场景
-                    fromCelebrationToKitty();
-                } else {
-                    // 第一次点击，设置定时器
-                    clickTimer = setTimeout(() => {
-                        clickTimer = null;
-                        // 单击不做任何事
-                    }, DOUBLE_CLICK_DELAY);
-                }
-            }
-            else if (currentState === STATE.CUSTOM_IMAGE) {
-                // Kitty场景：单击回到庆祝场景（显示蛋糕，不显示卡片）
-                returnToCelebrationFromKitty();
-            }
-        }
-
-        // 加载多张图片
-        function loadMultipleCustomImages() {
-            const promises = CUSTOM_IMAGES.map((src, index) => {
-                const targetCount = Math.floor(VISUAL_CONFIG.particleCount * 0.7);
-                return loadCustomImagePoints(src, targetCount).then(points => {
-                    shapeCache[`custom${index}`] = points;
-                    log(`图片 ${src} 加载完成，索引 ${index}`);
-                }).catch(err => {
-                    log(`图片 ${src} 加载失败，使用后备爱心`);
-                    shapeCache[`custom${index}`] = generateFallbackPoints(targetCount);
-                });
-            });
-            Promise.all(promises).then(() => {
-                if (ui.loadingText) ui.loadingText.style.display = 'none';
-            });
-        }
-
-        function createParticles() {
+        function createParticles() { /* 原有，保持不变 */ 
             const geometry = new THREE.BufferGeometry();
             const positions = new Float32Array(VISUAL_CONFIG.particleCount * 3);
             const colors = new Float32Array(VISUAL_CONFIG.particleCount * 3);
@@ -554,7 +633,7 @@
             scene.add(particleSystem);
         }
 
-        function getCircleTexture() {
+        function getCircleTexture() { /* 原有 */
             const c = document.createElement('canvas'); c.width=64; c.height=64;
             const ctx=c.getContext('2d');
             const g=ctx.createRadialGradient(32,32,0,32,32,32);
@@ -662,7 +741,7 @@
             return points;
         }
 
-        function getShapePoints(type, text) {
+        function getShapePoints(type, text) { /* 原有，保持不变 */
             const points = [];
             if (type === 'text') {
                 const c = document.createElement('canvas'); c.width=250; c.height=250;
@@ -680,7 +759,6 @@
                     }
                 }
             } else if (type === 'cake') {
-                // 蛋糕形状生成
                 const layers = [{y: -16, r: 18, h: 10, type: 'bottom'}, {y: -6,  r: 13, h: 8,  type: 'top'}];
                 layers.forEach(l => {
                     for(let i=0; i<(IS_MOBILE?800:1500); i++) {
@@ -766,7 +844,7 @@
         }
 
         // ========== 手势检测 ==========
-        function isGestureOne(landmarks) {
+        function isGestureOne(landmarks) { /* 原有 */
             if (!landmarks || landmarks.length < 21) return false;
             try {
                 const y8 = landmarks[8].y;
@@ -790,23 +868,22 @@
             }
         }
 
-        // 检测剪刀手（手势2）——食指和中指伸直，无名指和小指弯曲
-        function isTwoFingerGesture(landmarks) {
+        function isTwoFingerGesture(landmarks) { /* 原有 */
             if (!landmarks || landmarks.length < 21) return false;
             try {
-                const y8 = landmarks[8].y;   // 食指尖
-                const y6 = landmarks[6].y;   // 食指第二关节
-                const y12 = landmarks[12].y; // 中指尖
-                const y10 = landmarks[10].y; // 中指第二关节
-                const y16 = landmarks[16].y; // 无名指尖
-                const y14 = landmarks[14].y; // 无名指第二关节
-                const y20 = landmarks[20].y; // 小指尖
-                const y18 = landmarks[18].y; // 小指第二关节
+                const y8 = landmarks[8].y;
+                const y6 = landmarks[6].y;
+                const y12 = landmarks[12].y;
+                const y10 = landmarks[10].y;
+                const y16 = landmarks[16].y;
+                const y14 = landmarks[14].y;
+                const y20 = landmarks[20].y;
+                const y18 = landmarks[18].y;
 
-                const indexStraight = y8 < y6 - 0.05;      // 食指伸直
-                const middleStraight = y12 < y10 - 0.05;  // 中指伸直
-                const ringBent = y16 > y14 - 0.02;        // 无名指弯曲
-                const pinkyBent = y20 > y18 - 0.02;       // 小指弯曲
+                const indexStraight = y8 < y6 - 0.05;
+                const middleStraight = y12 < y10 - 0.05;
+                const ringBent = y16 > y14 - 0.02;
+                const pinkyBent = y20 > y18 - 0.02;
 
                 return indexStraight && middleStraight && ringBent && pinkyBent;
             } catch (e) {
@@ -815,113 +892,26 @@
             }
         }
 
-        // ========== 音乐切换函数（附带音量调整）==========
+        // ========== 音乐切换函数 ==========
         function switchMusicForState(state) {
             const targetSrc = (state === STATE.CUSTOM_IMAGE) ? KITTY_MUSIC_SRC : MAIN_MUSIC_SRC;
             const targetVolume = (state === STATE.CUSTOM_IMAGE) ? KITTY_VOLUME : MAIN_VOLUME;
 
             if (bgm.src.includes(targetSrc) && Math.abs(bgm.volume - targetVolume) < 0.01) {
-                return; // 已经是指定音乐且音量正确，不做操作
+                return;
             }
 
-            // 切换音乐
             bgm.pause();
             bgm.src = targetSrc;
             bgm.load();
-            bgm.volume = targetVolume; // 直接设置音量
+            bgm.volume = targetVolume;
             bgm.play().catch(e => log('自动播放被阻止：' + e));
         }
 
-        // 触发自定义图片场景（Kitty场景，启动轮播）
-        function transitionToKittyImage() {
-            if (currentState === STATE.CUSTOM_IMAGE) return;
-            if (!shapeCache['custom0']) {
-                log('自定义图片尚未加载完成，无法切换');
-                ui.gestureHint.innerText = '图片加载中，请稍后...';
-                ui.gestureHint.classList.remove('hidden');
-                setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
-                return;
-            }
-            log('进入Kitty场景，启动图片轮播');
-            // 隐藏举手图标和倒计时
-            ui.handIcon.style.display = 'none';
-            if (autoEntryTimer) { clearInterval(autoEntryTimer); autoEntryTimer = null; }
-            ui.autoCountdownText.classList.add('hidden');
-            
-            currentState = STATE.CUSTOM_IMAGE;
-            switchMusicForState(currentState); // 切换音乐并调整音量
-            particleSystem.rotation.y = 0; // 保持静止
-            // 启动图片轮播
-            startKittyImageRotation();
-            ui.topBanner.classList.add('hidden');
-            ui.blowMeter.style.opacity = '0';
-            ui.blowHint.style.opacity = '0';
-            // 调色盘已移除，无需隐藏
-            ui.mainText.innerText = '';
-            ui.subText.innerText = '';
-            ui.gestureHint.classList.remove('hidden');
-            ui.gestureHint.innerText = '✨ 图片轮播已启动 ✨';
-            setTimeout(() => ui.gestureHint.classList.add('hidden'), 3000);
-        }
-
-        // 启动Kitty图片轮播
-        function startKittyImageRotation() {
-            if (kittyImageTimer) clearInterval(kittyImageTimer);
-            currentKittyImageIndex = 0;
-            // 立即显示第一张
-            const firstKey = `custom${currentKittyImageIndex}`;
-            if (shapeCache[firstKey]) {
-                transitionTo(firstKey);
-            }
-            kittyImageTimer = setInterval(() => {
-                currentKittyImageIndex = (currentKittyImageIndex + 1) % CUSTOM_IMAGES.length;
-                const key = `custom${currentKittyImageIndex}`;
-                if (shapeCache[key]) {
-                    transitionTo(key);
-                } else {
-                    log(`图片 ${key} 未加载，跳过`);
-                }
-            }, CELEBRATION_IMAGE_INTERVAL);
-        }
-
-        // 停止Kitty图片轮播
-        function stopKittyImageRotation() {
-            if (kittyImageTimer) {
-                clearInterval(kittyImageTimer);
-                kittyImageTimer = null;
-            }
-        }
-
-        // 在Kitty场景中检测到剪刀手时，先切换到蛋糕形态，再进入庆祝场景（不显示卡片）
-        function triggerCelebrationFromKitty() {
-            if (currentState !== STATE.CUSTOM_IMAGE) return;
-            log('剪刀手手势触发: 从Kitty场景切换到蛋糕并庆祝（无卡片）');
-            
-            // 停止轮播
-            stopKittyImageRotation();
-            
-            // 先切换到蛋糕形态（但不进入吹气模式）
-            currentState = STATE.BLOWING; // 临时状态，只是为了正确加载蛋糕粒子
-            switchMusicForState(currentState); // 切换为主音乐
-            transitionTo('cake');
-            
-            // 然后立即调用庆祝函数，传入 false 不显示卡片
-            successCelebration(false);
-        }
-
-        // 庆祝函数，用于吹气成功或从其他方式进入庆祝状态（显示蛋糕粒子）
+        // 庆祝函数，增加 showCard 参数
         function successCelebration(showCard = true) {
             log('許愿成功！播放慶祝動畫');
-            // 隐藏举手图标和倒计时
-            ui.handIcon.style.display = 'none';
-            if (autoEntryTimer) { clearInterval(autoEntryTimer); autoEntryTimer = null; }
-            ui.autoCountdownText.classList.add('hidden');
-            
-            // 停止Kitty轮播（如果有）
-            stopKittyImageRotation();
-
             currentState = STATE.CELEBRATION;
-            // 音乐已在触发前切换，但以防万一再调用一次
             switchMusicForState(currentState);
             ui.statusText.innerText = "WISH GRANTED";
             ui.blowMeter.style.opacity = '0';
@@ -929,9 +919,6 @@
             
             document.body.classList.add('shake-screen');
             setTimeout(() => document.body.classList.remove('shake-screen'), 500);
-
-            // 切换到蛋糕粒子
-            transitionTo('cake');
 
             particlesData.forEach(p => {
                 if (p.type === 'cake' || p.type === 'candle' || p.type === 'ring') {
@@ -941,7 +928,6 @@
                 }
             });
 
-            // 根据 showCard 决定是否显示惊喜层和按钮
             if (showCard) {
                 setTimeout(() => {
                     ui.surpriseLayer.classList.remove('hidden');
@@ -949,56 +935,13 @@
                     ui.revealBtn.classList.remove('hidden');
                 }, 1500);
             } else {
-                // 不显示卡片
                 log('庆祝但不显示卡片');
+                // 可以在这里添加额外效果，比如烟花
             }
         }
 
-        // 从Kitty场景单击返回庆祝（显示蛋糕，不显示卡片，无烟花）
-        function returnToCelebrationFromKitty() {
-            if (currentState !== STATE.CUSTOM_IMAGE) return;
-            log('Kitty场景单击返回庆祝（蛋糕）');
-            stopKittyImageRotation();
-            
-            currentState = STATE.CELEBRATION;
-            switchMusicForState(currentState);
-            transitionTo('cake');
-            ui.surpriseLayer.classList.remove('active');
-            ui.surpriseLayer.classList.add('hidden');
-            ui.cardContainer.classList.add('hidden');
-            ui.revealBtn.classList.add('hidden');
-            ui.floatingGiftBtn.classList.remove('hidden'); // 显示礼物按钮？但庆祝场景通常有卡片，这里我们根据需求，不显示卡片
-            // 不显示卡片，所以隐藏惊喜层
-            ui.surpriseLayer.classList.remove('active');
-            ui.surpriseLayer.classList.add('hidden');
-            // 更新状态文字
-            ui.statusText.innerText = "CELEBRATION MODE";
-        }
-
-        // 庆祝状态下手势1：进入Kitty场景（轮播）
-        function fromCelebrationToKitty() {
-            if (currentState !== STATE.CELEBRATION) return;
-            log('庆祝状态手势1触发: 进入Kitty场景');
-            transitionToKittyImage();
-        }
-
-        // 庆祝状态下手势2：返回蛋糕吹气场景
-        function fromCelebrationToBlowing() {
-            if (currentState !== STATE.CELEBRATION) return;
-            log('庆祝状态手势2触发: 返回蛋糕吹气场景');
-            stopKittyImageRotation();
-            // 隐藏卡片如果显示着
-            ui.surpriseLayer.classList.remove('active');
-            ui.surpriseLayer.classList.add('hidden');
-            ui.cardContainer.classList.add('hidden');
-            ui.revealBtn.classList.add('hidden');
-            ui.floatingGiftBtn.classList.remove('hidden');
-            // 切换到蛋糕吹气
-            showCake();
-        }
-
         // 更新粒子动画
-        function updateParticles() {
+        function updateParticles() { /* 原有，保持不变 */
             const positions = particleSystem.geometry.attributes.position.array;
             const colors = particleSystem.geometry.attributes.color.array;
             const sizes = particleSystem.geometry.attributes.size.array;
@@ -1054,7 +997,6 @@
                         target.y = p.baseTarget.y + offsetY;
                         target.z = p.baseTarget.z + offsetZ;
 
-                        // 星空颜色
                         const hue = 0.65 + (p.noiseOffset * 0.002) % 0.3;
                         const saturation = 0.8;
                         let lightness = 0.3 + (p.noiseOffset % 0.4);
@@ -1121,53 +1063,44 @@
         // --- 业务逻辑 ---
         let transitionLock = false;
 
-        function showCake() {
-            // 防止重复调用
-            if (currentState === STATE.BLOWING || currentState === STATE.CELEBRATION) return;
-            log('展示蛋糕，等待吹氣/長按');
-            // 隐藏举手图标和倒计时
-            ui.handIcon.style.display = 'none';
+        function startSequence() { /* 原有 */
+            if (currentState !== STATE.IDLE || transitionLock) return;
             if (autoEntryTimer) { clearInterval(autoEntryTimer); autoEntryTimer = null; }
             ui.autoCountdownText.classList.add('hidden');
-            
-            // 重置吹气进度
-            blowProgress = 0;
-            ui.blowBar.style.width = '0%';
-            
+            log('檢測到手勢，開始倒計時序列');
+            transitionLock = true;
+            currentState = STATE.COUNTDOWN;
+            ui.statusText.innerText = "GESTURE DETECTED";
+            ui.statusText.className = "text-xs md:text-sm text-green-400 font-bold tracking-wider";
+            ui.statusDot.className = "inline-block w-2 h-2 rounded-full bg-green-500 mr-2 shadow-[0_0_8px_#0f0]";
+            ui.handIcon.style.display = 'none';
+            let count = 3;
+            ui.mainText.innerText = "";
+            ui.subText.innerText = "";
+            transitionTo('3');
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    transitionTo(count.toString());
+                } else {
+                    clearInterval(timer);
+                    showCake();
+                }
+            }, 1200);
+        }
+
+        function showCake() { /* 原有 */
+            log('展示蛋糕，開啟吹氣檢測');
             currentState = STATE.BLOWING;
-            switchMusicForState(currentState); // 切换为主音乐
+            switchMusicForState(currentState);
             transitionTo('cake');
-            // 调色盘已移除
             ui.mainText.innerText = "";
             ui.subText.innerText = "";
             ui.topBanner.classList.remove('hidden'); 
-            ui.statusText.innerText = "BLOW OR LONG PRESS";
-            // 显示吹气提示和进度条
+            ui.statusText.innerText = "MIC LISTENING...";
             ui.blowMeter.style.opacity = '1';
             ui.blowHint.style.opacity = '1';
             ui.gestureHint.classList.add('hidden');
-            transitionLock = false; // 允许后续操作
-        }
-
-        // 吹气检测循环
-        function checkAudio() {
-            requestAnimationFrame(checkAudio);
-            if (currentState !== STATE.BLOWING) return;
-            let volume = 0;
-            if (analyser) {
-                const data = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(data);
-                let sum = 0; for(let i=0; i<data.length; i++) sum += data[i];
-                volume = sum / data.length;
-            }
-            if (volume > VISUAL_CONFIG.blowThreshold || isSpacePressed || isTouching) {
-                blowProgress += 0.8; 
-            } else {
-                blowProgress -= 0.3; 
-            }
-            blowProgress = Math.max(0, Math.min(100, blowProgress));
-            ui.blowBar.style.width = blowProgress + '%';
-            if (blowProgress >= 100) successCelebration(); // 吹气成功，显示卡片（默认 true）
         }
 
         // 祝福语
@@ -1192,7 +1125,7 @@
              "生日快樂，永遠快樂！✨"
             ];
 
-        function typeWriter(textArray, containerId, speed = 50) {
+        function typeWriter(textArray, containerId, speed = 50) { /* 原有 */
             const container = document.getElementById(containerId);
             if (!container) return;
             container.innerHTML = "";
@@ -1259,8 +1192,7 @@
             ui.floatingGiftBtn.classList.remove('hidden');
             
             if (currentState === STATE.CELEBRATION) {
-                // 庆祝状态关闭卡片，回到蛋糕场景
-                showCake();
+                transitionTo('cake');
                 ui.statusText.innerText = "INTERACTIVE MODE: DRAG TO ROTATE";
                 ui.topBanner.classList.remove('hidden');
                 interactionMode = 1;
@@ -1284,7 +1216,7 @@
                     ui.autoCountdownText.classList.add('hidden');
                     if (currentState === STATE.IDLE) {
                         log('自動倒數结束，觸發開始序列');
-                        showCake(); // 直接进入蛋糕场景
+                        startSequence();
                     }
                 }
             }, 1000);
@@ -1302,36 +1234,27 @@
             btn.disabled = true;
             ui.loadingText.style.display = 'block';
             
+            // 改进：使用try-catch分别处理音频和摄像头，即使失败也进入IDLE
             try {
-                fadeAudioIn();
-                // 尝试获取麦克风权限，如果失败也不影响后续
-                try {
-                    await initAudio();
-                    log('音頻初始化成功');
-                } catch(e) {
-                    log('音頻初始化失败（用户拒绝或错误），使用长按/空格替代');
-                    ui.statusText.innerText = "MIC DENIED - USE LONG PRESS";
-                }
+                await initAudio();
+                log('音頻初始化成功');
             } catch(e) {
                 log('音頻初始化警告: ' + e);
-                ui.statusText.innerText = "AUDIO/MIC LIMITED";
+                ui.statusText.innerText = "AUDIO/MIC LIMITED (可使用長按或空格)";
             }
 
             try {
-                log('嘗試啟動摄像頭...');
                 await initCamera();
                 log('摄像頭啟動成功');
             } catch (e) {
                 log('摄像頭/MediaPipe 失敗: ' + e);
-                ui.statusText.innerText = "CAMERA FAILED - USE CLICK";
+                ui.statusText.innerText = "CAMERA FAILED - USE SPACEBAR/TOUCH";
             }
             
             log('進入主界面...');
             currentState = STATE.IDLE;
             ui.startOverlay.classList.add('hidden');
             ui.uiLayer.style.display = 'flex';
-            // 显示举手图标和倒计时（IDLE状态）
-            ui.handIcon.style.display = 'inline-block';
             startAutoEntryCountdown();
         });
 
@@ -1343,11 +1266,11 @@
                 analyser = audioContext.createAnalyser();
                 analyser.fftSize = 256;
                 source.connect(analyser);
-                checkAudio(); // 启动吹气检测
+                checkAudio();
             } catch (e) {
                 log('麥克風權限被拒绝');
-                ui.statusText.innerText = "MIC DENIED - USE LONG PRESS";
-                throw e; // 重新抛出让外层捕获，但不弹窗
+                ui.statusText.innerText = "MIC DENIED - USE TOUCH/SPACE";
+                throw e;
             }
         }
 
@@ -1358,17 +1281,11 @@
             }
             if (e.key === '1' && currentState !== STATE.INTRO) {
                 e.preventDefault();
-                if (currentState === STATE.CELEBRATION) {
-                    fromCelebrationToKitty();
-                }
-                // 其他状态忽略
+                transitionToCustomImage();
             }
             if (e.key === '2' && currentState !== STATE.INTRO) {
-                e.preventDefault();
                 if (currentState === STATE.CUSTOM_IMAGE) {
                     triggerCelebrationFromKitty();
-                } else if (currentState === STATE.CELEBRATION) {
-                    fromCelebrationToBlowing();
                 }
             }
         });
@@ -1379,8 +1296,35 @@
             }
         });
 
+        document.addEventListener('touchstart', (e) => {
+            if(currentState === STATE.BLOWING && !e.target.closest('button') && !e.target.closest('input')) {
+                isTouching = true;
+            }
+        }, {passive: false});
+        document.addEventListener('touchend', () => isTouching = false);
+        document.addEventListener('touchcancel', () => isTouching = false);
+
+        function checkAudio() {
+            requestAnimationFrame(checkAudio);
+            if (currentState !== STATE.BLOWING) return;
+            let volume = 0;
+            if (analyser) {
+                const data = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(data);
+                let sum = 0; for(let i=0; i<data.length; i++) sum += data[i];
+                volume = sum / data.length;
+            }
+            if (volume > VISUAL_CONFIG.blowThreshold || isSpacePressed || isTouching) {
+                blowProgress += 0.8; 
+            } else {
+                blowProgress -= 0.3; 
+            }
+            blowProgress = Math.max(0, Math.min(100, blowProgress));
+            ui.blowBar.style.width = blowProgress + '%';
+            if (blowProgress >= 100) successCelebration(); // 吹气成功显示卡片
+        }
+
         function fadeAudioIn() {
-            // 初始进入时播放主音乐，音量渐入至0.5
             bgm.src = MAIN_MUSIC_SRC;
             const playPromise = bgm.play();
             if (playPromise !== undefined) {
@@ -1423,7 +1367,6 @@
             });
             
             hands.onResults((results) => {
-                // 使用 try-catch 防止未捕获的异常导致 MediaPipe 停止
                 try {
                     if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                         const landmarks = results.multiHandLandmarks[0];
@@ -1431,29 +1374,20 @@
                         ui.camStatusText.innerText = "DETECTED";
                         ui.camStatusText.className = "text-[8px] text-green-400 font-mono font-bold";
                         
-                        // 根据当前状态响应手势
-                        if (currentState === STATE.IDLE) {
-                            // IDLE状态：只要有手，就进入蛋糕吹气场景
-                            if (!transitionLock) {
-                                showCake();
-                            }
-                        } 
-                        else if (currentState === STATE.CUSTOM_IMAGE) {
-                            // Kitty场景：手势2触发庆祝
-                            if (isTwoFingerGesture(landmarks)) {
-                                triggerCelebrationFromKitty();
+                        if (isGestureOne(landmarks)) {
+                            if (currentState !== STATE.CUSTOM_IMAGE) {
+                                transitionToCustomImage();
                             }
                         }
-                        else if (currentState === STATE.CELEBRATION) {
-                            // 庆祝状态：手势1进入Kitty，手势2返回蛋糕吹气
-                            if (isGestureOne(landmarks)) {
-                                fromCelebrationToKitty();
-                            } else if (isTwoFingerGesture(landmarks)) {
-                                fromCelebrationToBlowing();
+                        else if (isTwoFingerGesture(landmarks)) {
+                            triggerCelebrationFromKitty();
+                        }
+                        else {
+                            if (currentState === STATE.IDLE) {
+                                startSequence();
                             }
                         }
                         
-                        // 旋转控制（仅在蛋糕吹气状态下允许拖拽旋转）
                         if (interactionMode === 1 && currentState !== STATE.CUSTOM_IMAGE) {
                             const currentHandX = landmarks[9].x; 
                             const delta = currentHandX - lastHandX;
@@ -1468,7 +1402,6 @@
                         ui.camStatusText.className = "text-[8px] text-red-400 font-mono";
                     }
 
-                    // 绘制手部骨架（如果库可用）
                     const ctx = document.getElementById('output_canvas').getContext('2d');
                     ctx.clearRect(0, 0, 160, 120);
                     if(results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
@@ -1489,13 +1422,7 @@
                 height: 240 
             });
             
-            // 启动摄像头，并捕获可能的错误
-            try {
-                await camera.start();
-            } catch (e) {
-                log('摄像头启动失败: ' + e);
-                throw e; // 让外层处理，但不会弹窗
-            }
+            return camera.start();
         }
 
         function render() {
@@ -1503,6 +1430,7 @@
             updateParticles();
             renderer.render(scene, camera);
         }
+        })();
     </script>
 </body>
 </html>
