@@ -765,6 +765,8 @@
                 return;
             }
             log('手势1触发: 进入Hello Kitty场景');
+            // 隐藏举手图标
+            ui.handIcon.style.display = 'none';
             currentState = STATE.CUSTOM_IMAGE;
             switchMusicForState(currentState); // 切换音乐并调整音量
             particleSystem.rotation.y = 0; // 保持静止
@@ -797,6 +799,8 @@
         // 庆祝函数，增加 showCard 参数，默认为 true
         function successCelebration(showCard = true) {
             log('許愿成功！播放慶祝動畫');
+            // 隐藏举手图标
+            ui.handIcon.style.display = 'none';
             currentState = STATE.CELEBRATION;
             // 音乐已在触发前切换，但以防万一再调用一次
             switchMusicForState(currentState);
@@ -1004,6 +1008,8 @@
             // 防止重复调用
             if (currentState === STATE.BLOWING || currentState === STATE.CELEBRATION) return;
             log('展示蛋糕，開啟吹氣檢測');
+            // 隐藏举手图标
+            ui.handIcon.style.display = 'none';
             currentState = STATE.BLOWING;
             switchMusicForState(currentState); // 切换为主音乐
             transitionTo('cake');
@@ -1174,6 +1180,8 @@
             currentState = STATE.IDLE;
             ui.startOverlay.classList.add('hidden');
             ui.uiLayer.style.display = 'flex';
+            // 显示举手图标（IDLE状态）
+            ui.handIcon.style.display = 'inline-block';
             startAutoEntryCountdown();
         });
 
@@ -1306,7 +1314,7 @@
                             // IDLE状态：只要有手，就进入蛋糕吹气场景
                             // 使用 transitionLock 防止连续触发
                             if (!transitionLock) {
-                                // 可以选择直接 showCake 或者 startSequence（带倒计时）
+                                // 可以直接 showCake，也可以 startSequence 带倒计时
                                 // 为了直接进入，调用 showCake()
                                 showCake();
                             }
