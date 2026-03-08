@@ -787,9 +787,6 @@
             log('剪刀手手势触发: 从Kitty场景切换到蛋糕并庆祝（无卡片）');
             
             // 先切换到蛋糕形态（但不进入吹气模式）
-            // 临时保存当前状态，切换蛋糕后立即庆祝
-            // 注意：transitionTo('cake') 会改变粒子目标，但不改变 currentState
-            // 我们手动设置状态为 BLOWING 再调用 transitionTo('cake') 以加载蛋糕形状
             currentState = STATE.BLOWING; // 临时状态，只是为了正确加载蛋糕粒子
             switchMusicForState(currentState); // 切换为主音乐
             transitionTo('cake');
@@ -831,6 +828,28 @@
                 // 不显示卡片，但可以在这里添加其他效果（如果需要）
                 log('庆祝但不显示卡片');
             }
+        }
+
+        // 庆祝状态下手势1：进入Kitty场景
+        function fromCelebrationToKitty() {
+            if (currentState !== STATE.CELEBRATION) return;
+            log('庆祝状态手势1触发: 进入Kitty场景');
+            // 直接调用进入Kitty的函数
+            transitionToCustomImage();
+        }
+
+        // 庆祝状态下手势2：返回蛋糕吹气场景
+        function fromCelebrationToBlowing() {
+            if (currentState !== STATE.CELEBRATION) return;
+            log('庆祝状态手势2触发: 返回蛋糕吹气场景');
+            // 隐藏卡片如果显示着
+            ui.surpriseLayer.classList.remove('active');
+            ui.surpriseLayer.classList.add('hidden');
+            ui.cardContainer.classList.add('hidden');
+            ui.revealBtn.classList.add('hidden');
+            ui.floatingGiftBtn.classList.remove('hidden');
+            // 切换到蛋糕吹气
+            showCake();
         }
 
         // 更新粒子动画
@@ -1180,12 +1199,20 @@
             }
             if (e.key === '1' && currentState !== STATE.INTRO) {
                 e.preventDefault();
-                transitionToCustomImage();
+                if (currentState === STATE.CELEBRATION) {
+                    fromCelebrationToKitty();
+                } else if (currentState === STATE.CUSTOM_IMAGE) {
+                    // 已经在Kitty，忽略
+                } else {
+                    // IDLE下不允许
+                }
             }
             if (e.key === '2' && currentState !== STATE.INTRO) {
-                // 键盘2也触发庆祝（无卡片）
+                e.preventDefault();
                 if (currentState === STATE.CUSTOM_IMAGE) {
                     triggerCelebrationFromKitty();
+                } else if (currentState === STATE.CELEBRATION) {
+                    fromCelebrationToBlowing();
                 }
             }
         });
@@ -1276,18 +1303,29 @@
                         ui.camStatusText.innerText = "DETECTED";
                         ui.camStatusText.className = "text-[8px] text-green-400 font-mono font-bold";
                         
-                        // 检测手势1 (食指竖起)
-                        if (isGestureOne(landmarks)) {
-                            if (currentState !== STATE.CUSTOM_IMAGE) {
-                                transitionToCustomImage();
+                        // 根据当前状态响应手势
+                        if (currentState === STATE.IDLE) {
+                            // IDLE状态不响应任何手势，直接跳过
+                            // 不执行任何切换
+                        } 
+                        else if (currentState === STATE.CUSTOM_IMAGE) {
+                            // Kitty场景：手势1无效（已在Kitty），手势2触发庆祝
+                            if (isTwoFingerGesture(landmarks)) {
+                                triggerCelebrationFromKitty();
+                            }
+                            // 手势1忽略
+                        }
+                        else if (currentState === STATE.CELEBRATION) {
+                            // 庆祝状态：手势1进入Kitty，手势2返回蛋糕吹气
+                            if (isGestureOne(landmarks)) {
+                                fromCelebrationToKitty();
+                            } else if (isTwoFingerGesture(landmarks)) {
+                                fromCelebrationToBlowing();
                             }
                         }
-                        // 检测剪刀手 (手势2) —— 在Kitty场景中触发蛋糕庆祝（无卡片）
-                        else if (isTwoFingerGesture(landmarks)) {
-                            triggerCelebrationFromKitty();
-                        }
-                        // 其他手势不做任何操作（已移除自动进入蛋糕的逻辑）
+                        // 其他状态（如BLOWING）不响应手势
                         
+                        // 旋转控制（仅在蛋糕吹气状态下允许拖拽旋转）
                         if (interactionMode === 1 && currentState !== STATE.CUSTOM_IMAGE) {
                             const currentHandX = landmarks[9].x; 
                             const delta = currentHandX - lastHandX;
