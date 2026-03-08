@@ -175,10 +175,11 @@
             <p class="text-2xl text-pink-200/90 font-light tracking-wide mb-6">這份驚喜，為你獨家定製</p>
             <div class="space-y-4 text-gray-200 text-lg mb-8 font-light">
                 <p> 進入場景需要准許麥克風跟設想頭權限喔!</p>
-                <p>👋 <b>對著鏡頭 舉起手</b> 進入主場景</p>
-                <p>☝️ <b>豎起食指 </b>可進入Hello Kitty場景（需先慶祝）</p>
-                <p>✌️ <b>剪刀手</b> 返回蛋糕吹氣（需先慶祝）</p>
-                <p>👉 <b>點擊屏幕</b> 可在各場景間切換（詳見畫面提示）</p>
+                <p>👋 <b>舉起手 或 點擊屏幕</b> 進入主場景</p>
+                <p>💨 <b>對麥克風吹氣 或 長按屏幕</b> 許願</p>
+                <p>✌️ <b>剪刀手</b> 返回蛋糕場景（需先慶祝）</p>
+                <p>👆 <b>雙擊屏幕</b> 在慶祝場景進入Hello Kitty</p>
+                <p>👇 <b>單擊屏幕</b> 在Kitty場景返回慶祝</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
                 進入魔法世界
@@ -187,9 +188,8 @@
         </div>
     </div>
 
-    <!-- 提示信息：蛋糕吹气场景显示“點擊屏幕許願” -->
-    <div id="blow-hint" style="display: none;"><p class="text-lg font-bold text-pink-200 mb-1">👉 點擊屏幕 許下心願</p></div>
-    <div id="blow-meter-container" style="display: none;"><div id="blow-meter-bar"></div></div>
+    <div id="blow-hint"><p class="text-lg font-bold text-pink-200 mb-1">🎤 對著麥克風吹氣 或 長按屏幕</p><p class="text-xs text-gray-400">(如果麥克風不靈可長按屏幕)</p></div>
+    <div id="blow-meter-container"><div id="blow-meter-bar"></div></div>
 
     <div id="top-banner" class="hidden">
         <h1 class="text-6xl md:text-8xl banner-text">小慧生日快樂</h1>
@@ -359,6 +359,10 @@
         let celebrationImageTimer = null;
         let currentCelebrationImageIndex = 0;
 
+        // 双击检测相关
+        let clickTimer = null;
+        const DOUBLE_CLICK_DELAY = 300; // 毫秒
+
         const ui = {
             startOverlay: document.getElementById('start-overlay'),
             uiLayer: document.getElementById('ui-layer'),
@@ -446,28 +450,54 @@
             }, {passive: false});
             window.addEventListener('touchend', onEnd);
             
-            // 全局点击监听
+            // 全局点击监听（用于双击检测）
             document.addEventListener('click', handleGlobalClick);
-            document.addEventListener('touchstart', (e) => {
-                // 防止与拖拽冲突，且只处理非拖拽情况
-                if (!isDragging) handleGlobalClick(e);
-            }, {passive: false});
+            document.addEventListener('touchstart', handleTouchStart, {passive: false});
+            document.addEventListener('touchend', handleTouchEnd, {passive: false});
 
             render();
         }
 
-        // 处理全局点击
+        // 触摸长按处理（用于吹气积累）
+        function handleTouchStart(e) {
+            if (currentState === STATE.BLOWING && !e.target.closest('button') && !e.target.closest('input')) {
+                isTouching = true;
+            }
+        }
+        function handleTouchEnd() {
+            isTouching = false;
+        }
+
+        // 处理全局点击（双击/单击）
         function handleGlobalClick(e) {
-            // 如果点击在按钮上，不处理（按钮自己有事件）
-            if (e.target.closest('button')) return;
-            if (currentState === STATE.BLOWING) {
-                // 蛋糕吹气场景：点击直接进入庆祝（显示卡片）
-                successCelebration(true);
-            } else if (currentState === STATE.CELEBRATION) {
-                // 庆祝场景：点击进入 Kitty 场景（无卡片）
-                transitionToCustomImage();
-            } else if (currentState === STATE.CUSTOM_IMAGE) {
-                // Kitty 场景：点击回到庆祝场景（无卡片）
+            if (e.target.closest('button')) return; // 按钮由自己的事件处理
+
+            if (currentState === STATE.IDLE) {
+                // IDLE状态：单击进入蛋糕吹气场景
+                showCake();
+            }
+            else if (currentState === STATE.BLOWING) {
+                // 蛋糕吹气场景：单击无效（由吹气/长按控制）
+                // 不做任何事
+            }
+            else if (currentState === STATE.CELEBRATION) {
+                // 庆祝场景：双击进入Kitty，单击无效
+                if (clickTimer) {
+                    // 第二次点击，取消定时器，执行双击
+                    clearTimeout(clickTimer);
+                    clickTimer = null;
+                    // 双击进入Kitty场景
+                    fromCelebrationToKitty();
+                } else {
+                    // 第一次点击，设置定时器
+                    clickTimer = setTimeout(() => {
+                        clickTimer = null;
+                        // 单击不做任何事
+                    }, DOUBLE_CLICK_DELAY);
+                }
+            }
+            else if (currentState === STATE.CUSTOM_IMAGE) {
+                // Kitty场景：单击回到庆祝场景
                 successCelebration(false);
             }
         }
@@ -953,7 +983,7 @@
             const colors = particleSystem.geometry.attributes.color.array;
             const sizes = particleSystem.geometry.attributes.size.array;
             time += 0.02;
-            // 不再使用 blowProgress，因为已移除吹气逻辑
+            const blowInfluence = blowProgress / 100;
 
             for (let i = 0; i < VISUAL_CONFIG.particleCount; i++) {
                 const p = particlesData[i];
@@ -1021,9 +1051,9 @@
                 if (p.type === 'flame') {
                     const noise = Math.sin(time * 6 + p.noiseOffset) * 0.6;
                     target.x += noise;
-                    // 不再使用 blowInfluence，但庆祝时火焰仍可上升
-                    if (currentState === STATE.CELEBRATION) {
-                        let lift = 60;
+                    if (blowInfluence > 0.1 || currentState === STATE.CELEBRATION) {
+                        let lift = blowInfluence * 25;
+                        if(currentState === STATE.CELEBRATION) lift = 60;
                         target.y += lift;
                         target.x += (Math.random()-0.5) * lift * 0.8;
                         p.targetColor.lerp(new THREE.Color(0xdddddd), 0.1); 
@@ -1040,8 +1070,9 @@
                 colors[i*3+1] += (p.targetColor.g - colors[i*3+1]) * 0.1;
                 colors[i*3+2] += (p.targetColor.b - colors[i*3+2]) * 0.1;
 
-                if (p.type === 'flame' && currentState === STATE.CELEBRATION) {
-                    sizes[i] = Math.max(0, 1.5 * 0.1); // 火焰大小
+                if (p.type === 'flame' && (blowInfluence > 0.1 || currentState === STATE.CELEBRATION)) {
+                    sizes[i] = Math.max(0, 1.5 * (1 - blowInfluence)); 
+                    if(currentState === STATE.CELEBRATION) sizes[i] *= 0.9;
                 } else {
                     sizes[i] = 1.2 + Math.sin(time + i) * 0.3;
                 }
@@ -1073,11 +1104,15 @@
         function showCake() {
             // 防止重复调用
             if (currentState === STATE.BLOWING || currentState === STATE.CELEBRATION) return;
-            log('展示蛋糕，等待点击进入庆祝');
+            log('展示蛋糕，等待吹氣/長按');
             // 隐藏举手图标和倒计时
             ui.handIcon.style.display = 'none';
             if (autoEntryTimer) { clearInterval(autoEntryTimer); autoEntryTimer = null; }
             ui.autoCountdownText.classList.add('hidden');
+            
+            // 重置吹气进度
+            blowProgress = 0;
+            ui.blowBar.style.width = '0%';
             
             currentState = STATE.BLOWING;
             switchMusicForState(currentState); // 切换为主音乐
@@ -1086,15 +1121,34 @@
             ui.mainText.innerText = "";
             ui.subText.innerText = "";
             ui.topBanner.classList.remove('hidden'); 
-            ui.statusText.innerText = "CLICK TO WISH";
-            // 显示点击提示
-            ui.blowHint.style.display = 'block';
+            ui.statusText.innerText = "BLOW OR LONG PRESS";
+            // 显示吹气提示和进度条
+            ui.blowMeter.style.opacity = '1';
             ui.blowHint.style.opacity = '1';
             ui.gestureHint.classList.add('hidden');
             transitionLock = false; // 允许后续操作
         }
 
-        // 调色盘相关事件监听已移除
+        // 吹气检测循环
+        function checkAudio() {
+            requestAnimationFrame(checkAudio);
+            if (currentState !== STATE.BLOWING) return;
+            let volume = 0;
+            if (analyser) {
+                const data = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(data);
+                let sum = 0; for(let i=0; i<data.length; i++) sum += data[i];
+                volume = sum / data.length;
+            }
+            if (volume > VISUAL_CONFIG.blowThreshold || isSpacePressed || isTouching) {
+                blowProgress += 0.8; 
+            } else {
+                blowProgress -= 0.3; 
+            }
+            blowProgress = Math.max(0, Math.min(100, blowProgress));
+            ui.blowBar.style.width = blowProgress + '%';
+            if (blowProgress >= 100) successCelebration(); // 吹气成功，显示卡片（默认 true）
+        }
 
         // 祝福语
         const wishes_part1 = [
@@ -1235,8 +1289,8 @@
                     await initAudio();
                     log('音頻初始化成功');
                 } catch(e) {
-                    log('音頻初始化失败（用户拒绝或错误），使用点击替代');
-                    ui.statusText.innerText = "MIC DENIED - USE CLICK";
+                    log('音頻初始化失败（用户拒绝或错误），使用长按/空格替代');
+                    ui.statusText.innerText = "MIC DENIED - USE LONG PRESS";
                 }
             } catch(e) {
                 log('音頻初始化警告: ' + e);
@@ -1269,21 +1323,18 @@
                 analyser = audioContext.createAnalyser();
                 analyser.fftSize = 256;
                 source.connect(analyser);
-                // 不再使用 checkAudio 进行吹气检测，但保留以防万一
-                // 我们已移除吹气逻辑，所以这里不需要了
-                // checkAudio();
+                checkAudio(); // 启动吹气检测
             } catch (e) {
                 log('麥克風權限被拒绝');
-                ui.statusText.innerText = "MIC DENIED - USE CLICK";
+                ui.statusText.innerText = "MIC DENIED - USE LONG PRESS";
                 throw e;
             }
         }
 
         // --- 键盘控制 ---
         document.addEventListener('keydown', (e) => {
-            // 空格不再用于吹气，保留但无效
             if (e.code === 'Space') {
-                e.preventDefault();
+                isSpacePressed = true;
             }
             if (e.key === '1' && currentState !== STATE.INTRO) {
                 e.preventDefault();
@@ -1303,11 +1354,10 @@
         });
 
         document.addEventListener('keyup', (e) => {
-            // 空格不再使用
+            if (e.code === 'Space') {
+                isSpacePressed = false;
+            }
         });
-
-        // 移除长按触摸，改用全局点击
-        // 不再需要触摸吹气逻辑
 
         function fadeAudioIn() {
             // 初始进入时播放主音乐，音量渐入至0.5
