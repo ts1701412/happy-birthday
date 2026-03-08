@@ -1489,7 +1489,13 @@
                 height: 240 
             });
             
-            return camera.start();
+            // 启动摄像头，并捕获可能的错误
+            try {
+                await camera.start();
+            } catch (e) {
+                log('摄像头启动失败: ' + e);
+                throw e; // 让外层处理，但不会弹窗
+            }
         }
 
         function render() {
