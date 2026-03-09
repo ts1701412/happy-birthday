@@ -19,7 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
 
     <style>
-        /* 原有样式保持不变，仅微调 */
+        /* 原有样式保持不变 */
         :root { --bg-gradient: radial-gradient(circle at center, #1a0b1a 0%, #000000 100%); }
         body { 
             margin: 0; overflow: hidden; 
@@ -174,11 +174,11 @@
             <h1 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">Happy Birthday</h1>
             <div class="space-y-4 text-gray-200 text-lg mb-8 font-light">
                 <p> 進入場景需要准許麥克風跟設想頭權限喔!</p>
-                <p>👋 <b>對著鏡頭 舉起手</b> 喚醒魔法</p>
-                <p>☝️ <b>豎起食指 </b>可進入Hello Kitty場景 (輪播圖片)</p>
-                <p>✌️ <b>剪刀手</b> 觸發蛋糕慶祝 (或雙擊返回)</p>
+                <p>👋 <b>對著鏡頭 舉起手</b> 或 <b>點擊畫面</b> 喚醒魔法</p>
+                <p>☝️ <b>豎起食指</b> 進入圖片粒子場景 (自動輪播)</p>
+                <p>✌️ <b>剪刀手</b> 或 <b>雙擊</b> 返回慶祝場景</p>
                 <p>💨 <b>持續吹氣</b> 許下心願</p>
-                <p>🎉 慶祝場景单击屏幕 → 進入下一张图片场景<br>🎆 图片场景双击屏幕 → 返回慶祝</p>
+                <p>🎉 慶祝場景单击屏幕 → 進入下一张图片场景</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
                 進入魔法世界
@@ -212,7 +212,7 @@
                 <span id="hand-icon" class="text-6xl animate-bounce">👋</span>
                 <h2 id="instruction-text" class="text-6xl md:text-8xl font-bold text-white neon-pulse transition-all duration-700">舉起手</h2>
             </div>
-            <p id="sub-instruction" class="mt-4 text-xl md:text-2xl text-pink-200/80 font-light tracking-[0.3em]">對準鏡頭讓魔法發生</p>
+            <p id="sub-instruction" class="mt-4 text-xl md:text-2xl text-pink-200/80 font-light tracking-[0.3em]">對準鏡頭或點擊畫面讓魔法發生</p>
             <p id="auto-countdown-text" class="mt-4 text-sm text-pink-200/60 font-light tracking-wider animate-pulse hidden"></p>
         </div>
 
@@ -382,9 +382,28 @@
         ];
         let currentImageIndex = 0;
         let isLoadingImage = false; // 防止重复加载
+        let imageRotateTimer = null; // 自动轮播定时器
 
-        // 加载下一张图片并更新shapeCache['custom']，完成后自动切换到该形态
-        function loadNextCustomImage() {
+        // 启动图片轮播定时器 (仅在CUSTOM_IMAGE状态)
+        function startImageRotation() {
+            if (imageRotateTimer) clearInterval(imageRotateTimer);
+            if (IMAGE_LIST.length <= 1) return;
+            imageRotateTimer = setInterval(() => {
+                if (currentState === STATE.CUSTOM_IMAGE) {
+                    log('自动轮播：切换到下一张图片');
+                    loadNextCustomImage(true); // 强制加载并切换
+                } else {
+                    // 如果不在图片场景，清除定时器
+                    if (imageRotateTimer) {
+                        clearInterval(imageRotateTimer);
+                        imageRotateTimer = null;
+                    }
+                }
+            }, 15000); // 15秒切换
+        }
+
+        // 加载下一张图片并更新shapeCache['custom']，参数 autoTransition 表示是否立即切换到该形态（当前状态是CUSTOM_IMAGE时）
+        function loadNextCustomImage(forceTransition = false) {
             if (isLoadingImage) return;
             isLoadingImage = true;
             // 显示加载提示
@@ -401,8 +420,8 @@
                 isLoadingImage = false;
                 ui.gestureHint.innerText = '✅ 图片已切换';
                 setTimeout(() => ui.gestureHint.classList.add('hidden'), 1500);
-                // 如果当前状态是CUSTOM_IMAGE，立即应用新图片
-                if (currentState === STATE.CUSTOM_IMAGE) {
+                // 如果当前状态是CUSTOM_IMAGE 或者 强制切换，立即应用新图片
+                if (currentState === STATE.CUSTOM_IMAGE || forceTransition) {
                     transitionTo('custom');
                 }
             }).catch(err => {
@@ -411,15 +430,15 @@
                 isLoadingImage = false;
                 ui.gestureHint.innerText = '⚠️ 加载失败，使用默认';
                 setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
-                if (currentState === STATE.CUSTOM_IMAGE) {
+                if (currentState === STATE.CUSTOM_IMAGE || forceTransition) {
                     transitionTo('custom');
                 }
             });
         }
 
-        // 修改 transitionToCustomImage，每次进入时自动加载下一张（如果尚未加载则立即加载）
+        // 修改 transitionToCustomImage，每次进入时如果已经缓存则直接进入，并启动轮播
         function transitionToCustomImage() {
-            if (currentState === STATE.CUSTOM_IMAGE) return; // 已在场景中，不重复进入（但我们可以允许双击返回，所以这里保持不变）
+            if (currentState === STATE.CUSTOM_IMAGE) return; // 已在场景中
             if (!shapeCache['custom']) {
                 // 如果没有缓存，先加载默认（索引0）
                 if (!isLoadingImage) {
@@ -455,13 +474,18 @@
             ui.gestureHint.innerText = `✨ 图片场景 ${currentImageIndex+1}/${IMAGE_LIST.length} ✨`;
             setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
             
-            // 预加载下一张（可选）
-            // 不自动预加载，以免干扰，等待单击时再加载
+            // 启动轮播
+            startImageRotation();
         }
 
         // 在Kitty场景中检测到剪刀手或双击时，触发庆祝（无卡片）
         function triggerCelebrationFromKitty() {
             if (currentState !== STATE.CUSTOM_IMAGE) return;
+            // 清除轮播定时器
+            if (imageRotateTimer) {
+                clearInterval(imageRotateTimer);
+                imageRotateTimer = null;
+            }
             log('剪刀手/双击触发: 从Kitty场景切换到蛋糕并庆祝（无卡片）');
             currentState = STATE.BLOWING; // 临时，为了加载蛋糕
             switchMusicForState(currentState);
@@ -539,6 +563,13 @@
                 // 防止点击按钮等交互元素时触发
                 if (e.target.closest('button') || e.target.closest('.safe-click-area')) return;
                 
+                // ★ 新增：在IDLE状态下点击直接进入吹气场景
+                if (currentState === STATE.IDLE) {
+                    log('IDLE状态点击，直接开始序列');
+                    startSequence();
+                    return;
+                }
+
                 if (currentState === STATE.CELEBRATION) {
                     // 庆祝场景单击 -> 进入下一张图片场景
                     if (clickTimer) {
@@ -552,9 +583,7 @@
                                 log('庆祝场景单击，进入图片场景');
                                 // 先加载下一张图片再进入
                                 loadNextCustomImage(); // 这会异步加载，并更新缓存
-                                // 但transitionToCustomImage会使用最新的缓存，我们需要等待加载完成？
-                                // 简单起见：先加载，然后调用transitionToCustomImage（但transitionToCustomImage会检查缓存，如果正在加载会等待）
-                                // 我们直接调用transitionToCustomImage，其内部会处理加载状态
+                                // 调用transitionToCustomImage，其内部会处理加载状态
                                 transitionToCustomImage();
                             }
                             clickTimer = null;
@@ -936,7 +965,6 @@
                 }, 1500);
             } else {
                 log('庆祝但不显示卡片');
-                // 可以在这里添加额外效果，比如烟花
             }
         }
 
@@ -1234,6 +1262,9 @@
             btn.disabled = true;
             ui.loadingText.style.display = 'block';
             
+            // 先播放背景音乐（确保用户交互后立即播放）
+            fadeAudioIn();
+            
             // 改进：使用try-catch分别处理音频和摄像头，即使失败也进入IDLE
             try {
                 await initAudio();
@@ -1331,7 +1362,7 @@
                 playPromise.then(_ => {
                     log('背景音樂開始播放');
                 }).catch(error => {
-                    log('自動播放被阻止，等待用户交互');
+                    log('自動播放被阻止，等待用户交互: ' + error);
                 });
             }
             bgm.volume = 0;
