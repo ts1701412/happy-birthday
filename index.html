@@ -178,7 +178,7 @@
                 <p>☝️ <b>豎起食指</b> 進入圖片粒子場景 (自動輪播)</p>
                 <p>✌️ <b>剪刀手</b> 或 <b>雙擊</b> 返回慶祝場景</p>
                 <p>💨 <b>持續吹氣</b> 許下心願</p>
-                <p>🎉 慶祝場景单击屏幕 → 進入下一张图片场景</p>
+                <p>🎉 慶祝場景：<b>手勢左右移動</b> 或 <b>滑動屏幕</b> 旋轉蛋糕</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
                 進入魔法世界
@@ -319,7 +319,7 @@
         const STATE = { INTRO: -1, IDLE: 0, COUNTDOWN: 1, CAKE: 2, BLOWING: 3, CELEBRATION: 4, CUSTOM_IMAGE: 5 };
         
         let currentState = STATE.INTRO;
-        let interactionMode = 0; 
+        let interactionMode = 0; // 0: 手势旋转关闭, 1: 手势旋转开启
         
         let particlesData = [];
         let scene, camera, renderer, particleSystem;
@@ -333,7 +333,7 @@
         let isDragging = false;
         let previousMouseX = 0;
         let lastHandX = 0;
-        let autoRotateSpeed = 0.005;
+        let autoRotateSpeed = 0.005; // 自动旋转速度，仅在非庆祝场景且手势关闭时使用
 
         // --- 自動倒數變量 ---
         let autoEntryTimer = null;
@@ -462,6 +462,7 @@
             }
             log('手势1触发: 进入自定义图片场景 (轮播)');
             currentState = STATE.CUSTOM_IMAGE;
+            interactionMode = 0; // 图片场景禁止手势旋转
             switchMusicForState(currentState);
             particleSystem.rotation.y = 0;
             transitionTo('custom');
@@ -941,6 +942,7 @@
         function successCelebration(showCard = true) {
             log('許愿成功！播放慶祝動畫');
             currentState = STATE.CELEBRATION;
+            interactionMode = 1; // 庆祝场景开启手势旋转
             switchMusicForState(currentState);
             ui.statusText.innerText = "WISH GRANTED";
             ui.blowMeter.style.opacity = '0';
@@ -969,7 +971,7 @@
         }
 
         // 更新粒子动画
-        function updateParticles() { /* 原有，保持不变 */
+        function updateParticles() {
             const positions = particleSystem.geometry.attributes.position.array;
             const colors = particleSystem.geometry.attributes.color.array;
             const sizes = particleSystem.geometry.attributes.size.array;
@@ -1072,15 +1074,22 @@
             particleSystem.geometry.attributes.color.needsUpdate = true;
             particleSystem.geometry.attributes.size.needsUpdate = true;
             
+            // 旋转逻辑：图片场景禁止旋转；庆祝场景手势旋转（无自动旋转）；其他场景若手势开启则旋转，否则有微小摆动
             if (currentState === STATE.CUSTOM_IMAGE) {
                 particleSystem.rotation.y = 0;
             } else {
                 if (interactionMode === 1) {
                     if (!isDragging) {
                         rotationVelocity *= 0.96; 
-                        particleSystem.rotation.y += rotationVelocity + autoRotateSpeed;
+                        // 庆祝场景不加自动旋转，其他需要自动旋转的场景由外层控制
+                        if (currentState === STATE.CELEBRATION) {
+                            particleSystem.rotation.y += rotationVelocity;
+                        } else {
+                            particleSystem.rotation.y += rotationVelocity + autoRotateSpeed;
+                        }
                     }
                 } else if (currentState !== STATE.IDLE && currentState !== STATE.INTRO) {
+                    // 非空闲、非介绍、手势关闭时，微小摆动（蛋糕/吹气场景的自动摆动）
                     particleSystem.rotation.y = Math.sin(time * 0.15) * 0.15;
                 } else {
                     particleSystem.rotation.y = 0;
@@ -1117,9 +1126,10 @@
             }, 1200);
         }
 
-        function showCake() { /* 原有 */
+        function showCake() { /* 原有，添加 interactionMode = 0 */
             log('展示蛋糕，開啟吹氣檢測');
             currentState = STATE.BLOWING;
+            interactionMode = 0; // 蛋糕场景禁止手势旋转
             switchMusicForState(currentState);
             transitionTo('cake');
             ui.mainText.innerText = "";
@@ -1220,10 +1230,11 @@
             ui.floatingGiftBtn.classList.remove('hidden');
             
             if (currentState === STATE.CELEBRATION) {
+                // 庆祝状态关闭卡片，回到蛋糕场景
                 transitionTo('cake');
                 ui.statusText.innerText = "INTERACTIVE MODE: DRAG TO ROTATE";
                 ui.topBanner.classList.remove('hidden');
-                interactionMode = 1;
+                interactionMode = 0; // 蛋糕场景禁止手势旋转
                 switchMusicForState(STATE.BLOWING);
             }
         });
@@ -1419,7 +1430,8 @@
                             }
                         }
                         
-                        if (interactionMode === 1 && currentState !== STATE.CUSTOM_IMAGE) {
+                        // 手势旋转：仅在庆祝场景且手势开启时有效
+                        if (interactionMode === 1 && currentState === STATE.CELEBRATION) {
                             const currentHandX = landmarks[9].x; 
                             const delta = currentHandX - lastHandX;
                             if (Math.abs(delta) > 0.002) {
