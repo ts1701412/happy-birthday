@@ -148,19 +148,11 @@
         }
         .gesture-hint.hidden { opacity: 0; }
 
-        /* ===== 用户要求移除蓝色圈起的部分 ===== */
-        /* 隐藏左上角状态面板（包含 INTERACTIVE MODE 和状态圆点） */
+        /* ===== 用户要求：隐藏左上角状态面板（INTERACTIVE MODE等）===== */
         .flex.justify-between.items-start.w-full > .glass-panel {
             display: none !important;
         }
-        /* 隐藏左下角摄像头预览框（包含 NO HAND 和摄像头画面） */
-        #cam-preview-container {
-            display: none !important;
-        }
-        /* 隐藏中心大提示文字（如“舉起手”），如果用户希望完全清空界面可取消注释 */
-        /* #center-instruction { display: none !important; } */
-        /* 隐藏吹气提示文字（如果需要可取消注释） */
-        /* #blow-hint { display: none !important; } */
+        /* 注意：cam-preview-container 不再隐藏，已还原 */
     </style>
 </head>
 <body>
@@ -209,7 +201,7 @@
         <p class="text-pink-200/70 text-lg mt-2 tracking-widest uppercase">Best Wishes for You</p>
     </div>
 
-    <!-- UI 層（已精简，且左上角状态面板和左下角摄像头预览框已被隐藏） -->
+    <!-- UI 層（已精简，左上角状态面板隐藏，但摄像头预览框已还原） -->
     <div id="ui-layer" style="display: none;">
         <div class="flex justify-between items-start w-full">
             <!-- 左上角状态面板（已通过CSS隐藏） -->
@@ -231,7 +223,7 @@
             <p id="auto-countdown-text" class="mt-4 text-sm text-pink-200/60 font-light tracking-wider animate-pulse hidden"></p>
         </div>
 
-        <!-- 摄像頭預覽框（已通过CSS隐藏） -->
+        <!-- 摄像頭預覽框（已还原，不再隐藏） -->
         <div id="cam-preview-container" class="absolute bottom-6 left-6 z-50 opacity-90 hover:opacity-100">
             <div class="glass-panel p-2 rounded-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                 <div class="relative w-36 h-28 bg-black/40 rounded-lg overflow-hidden border border-white/5">
@@ -300,7 +292,7 @@
         </div>
     </div>
 
-    <!-- 手势提示浮层（轻量） -->
+    <!-- 手势提示浮层（轻量）——已不再用于显示图片场景提示，但保留元素以备其他用途 -->
     <div id="gesture-hint" class="gesture-hint hidden"></div>
 
     <script>
@@ -421,9 +413,8 @@
         function loadNextCustomImage(forceTransition = false) {
             if (isLoadingImage) return;
             isLoadingImage = true;
-            // 显示加载提示
-            ui.gestureHint.innerText = '✨ 加载下一张图片... ✨';
-            ui.gestureHint.classList.remove('hidden');
+            // 移除所有显示提示的代码，只保留控制台日志
+            log('加载下一张图片...');
             
             const nextIndex = (currentImageIndex + 1) % IMAGE_LIST.length;
             const src = IMAGE_LIST[nextIndex];
@@ -433,8 +424,7 @@
                 shapeCache['custom'] = points;
                 currentImageIndex = nextIndex;
                 isLoadingImage = false;
-                ui.gestureHint.innerText = '✅ 图片已切换';
-                setTimeout(() => ui.gestureHint.classList.add('hidden'), 1500);
+                log('图片已切换');
                 // 如果当前状态是CUSTOM_IMAGE 或者 强制切换，立即应用新图片
                 if (currentState === STATE.CUSTOM_IMAGE || forceTransition) {
                     transitionTo('custom');
@@ -443,8 +433,6 @@
                 log('图片加载失败，使用后备爱心: ' + err);
                 shapeCache['custom'] = generateFallbackPoints(Math.floor(VISUAL_CONFIG.particleCount * 0.7));
                 isLoadingImage = false;
-                ui.gestureHint.innerText = '⚠️ 加载失败，使用默认';
-                setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
                 if (currentState === STATE.CUSTOM_IMAGE || forceTransition) {
                     transitionTo('custom');
                 }
@@ -458,13 +446,11 @@
                 // 如果没有缓存，先加载默认（索引0）
                 if (!isLoadingImage) {
                     isLoadingImage = true;
-                    ui.gestureHint.innerText = '加载初始图片...';
-                    ui.gestureHint.classList.remove('hidden');
+                    log('加载初始图片...');
                     loadCustomImagePoints(IMAGE_LIST[0], Math.floor(VISUAL_CONFIG.particleCount * 0.7)).then(points => {
                         shapeCache['custom'] = points;
                         currentImageIndex = 0;
                         isLoadingImage = false;
-                        ui.gestureHint.classList.add('hidden');
                         // 再调用自身
                         transitionToCustomImage();
                     }).catch(e => {
@@ -486,9 +472,8 @@
             ui.blowHint.style.opacity = '0';
             ui.mainText.innerText = '';
             ui.subText.innerText = '';
-            ui.gestureHint.classList.remove('hidden');
-            ui.gestureHint.innerText = `✨ 图片场景 ${currentImageIndex+1}/${IMAGE_LIST.length} ✨`;
-            setTimeout(() => ui.gestureHint.classList.add('hidden'), 2000);
+            // 移除所有显示ui.gestureHint的代码
+            log(`进入图片场景 ${currentImageIndex+1}/${IMAGE_LIST.length}`);
             
             // 启动轮播
             startImageRotation();
@@ -1153,6 +1138,7 @@
             ui.statusText.innerText = "MIC LISTENING...";
             ui.blowMeter.style.opacity = '1';
             ui.blowHint.style.opacity = '1';
+            // 确保gestureHint隐藏
             ui.gestureHint.classList.add('hidden');
         }
 
