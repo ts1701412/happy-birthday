@@ -183,7 +183,7 @@
                 <p>👋 <b>對著鏡頭 舉起手</b> 或 <b>點擊畫面</b> 喚醒魔法</p>
                 <p>☝️ <b>豎起食指</b> 進入圖片粒子場景 (自動輪播)</p>
                 <p>✌️ <b>剪刀手</b> 或 <b>雙擊</b> 返回慶祝場景</p>
-                <p>💨 <b>持續吹氣</b> 許下心願</p>
+                <p>💨 <b>持續吹氣</b> 或 <b>長按屏幕</b> 許下心願</p>
                 <p>🎉 慶祝場景：<b>手勢左右移動</b> 或 <b>滑動屏幕</b> 旋轉蛋糕</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
@@ -193,7 +193,7 @@
         </div>
     </div>
 
-    <div id="blow-hint"><p class="text-lg font-bold text-pink-200 mb-1">🎤 對著麥克風吹氣</p><p class="text-xs text-gray-400">(如果麥克風不靈手機長按屏幕)</p></div>
+    <div id="blow-hint"><p class="text-lg font-bold text-pink-200 mb-1">🎤 對著麥克風吹氣 或 長按屏幕</p><p class="text-xs text-gray-400">(長按可快速許願)</p></div>
     <div id="blow-meter-container"><div id="blow-meter-bar"></div></div>
 
     <div id="top-banner" class="hidden">
@@ -201,7 +201,7 @@
         <p class="text-pink-200/70 text-lg mt-2 tracking-widest uppercase">Best Wishes for You</p>
     </div>
 
-    <!-- UI 層（已精简，左上角状态面板隐藏，但摄像头预览框已还原） -->
+    <!-- UI 層（左上角状态面板隐藏，摄像头预览框已还原） -->
     <div id="ui-layer" style="display: none;">
         <div class="flex justify-between items-start w-full">
             <!-- 左上角状态面板（已通过CSS隐藏） -->
@@ -223,7 +223,7 @@
             <p id="auto-countdown-text" class="mt-4 text-sm text-pink-200/60 font-light tracking-wider animate-pulse hidden"></p>
         </div>
 
-        <!-- 摄像頭預覽框（已还原，不再隐藏） -->
+        <!-- 摄像頭預覽框（已还原） -->
         <div id="cam-preview-container" class="absolute bottom-6 left-6 z-50 opacity-90 hover:opacity-100">
             <div class="glass-panel p-2 rounded-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                 <div class="relative w-36 h-28 bg-black/40 rounded-lg overflow-hidden border border-white/5">
@@ -292,7 +292,7 @@
         </div>
     </div>
 
-    <!-- 手势提示浮层（轻量）——已不再用于显示图片场景提示，但保留元素以备其他用途 -->
+    <!-- 手势提示浮层（已不再用于图片场景提示） -->
     <div id="gesture-hint" class="gesture-hint hidden"></div>
 
     <script>
@@ -1339,13 +1339,45 @@
             }
         });
 
+        // 新增长按定时器变量
+        let longPressInterval = null;
+
+        // 优化触摸事件处理
         document.addEventListener('touchstart', (e) => {
-            if(currentState === STATE.BLOWING && !e.target.closest('button') && !e.target.closest('input')) {
+            if (currentState === STATE.BLOWING && !e.target.closest('button') && !e.target.closest('input')) {
+                // 清除之前的定时器，避免叠加
+                if (longPressInterval) clearInterval(longPressInterval);
+                // 启动长按定时器，每50ms增加2%进度
+                longPressInterval = setInterval(() => {
+                    blowProgress = Math.min(100, blowProgress + 2);
+                    ui.blowBar.style.width = blowProgress + '%';
+                    if (blowProgress >= 100) {
+                        successCelebration();
+                        if (longPressInterval) {
+                            clearInterval(longPressInterval);
+                            longPressInterval = null;
+                        }
+                    }
+                }, 50);
                 isTouching = true;
             }
-        }, {passive: false});
-        document.addEventListener('touchend', () => isTouching = false);
-        document.addEventListener('touchcancel', () => isTouching = false);
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            if (longPressInterval) {
+                clearInterval(longPressInterval);
+                longPressInterval = null;
+            }
+            isTouching = false;
+        });
+
+        document.addEventListener('touchcancel', () => {
+            if (longPressInterval) {
+                clearInterval(longPressInterval);
+                longPressInterval = null;
+            }
+            isTouching = false;
+        });
 
         function checkAudio() {
             requestAnimationFrame(checkAudio);
@@ -1357,10 +1389,15 @@
                 let sum = 0; for(let i=0; i<data.length; i++) sum += data[i];
                 volume = sum / data.length;
             }
-            if (volume > VISUAL_CONFIG.blowThreshold || isSpacePressed || isTouching) {
+            // 麦克风或空格键控制
+            if (volume > VISUAL_CONFIG.blowThreshold || isSpacePressed) {
                 blowProgress += 0.8; 
             } else {
-                blowProgress -= 0.3; 
+                // 注意：长按定时器已经独立控制进度，这里不再减去以避免冲突
+                // 但保留原有的递减逻辑，为了不让进度自动下降太快，仅在既没有长按也没有麦克风时缓慢下降
+                if (!isTouching) {
+                    blowProgress -= 0.3; 
+                }
             }
             blowProgress = Math.max(0, Math.min(100, blowProgress));
             ui.blowBar.style.width = blowProgress + '%';
