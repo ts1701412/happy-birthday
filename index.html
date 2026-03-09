@@ -147,6 +147,20 @@
             pointer-events: none; transition: opacity 0.3s;
         }
         .gesture-hint.hidden { opacity: 0; }
+
+        /* ===== 用户要求移除蓝色圈起的部分 ===== */
+        /* 隐藏左上角状态面板（包含 INTERACTIVE MODE 和状态圆点） */
+        .flex.justify-between.items-start.w-full > .glass-panel {
+            display: none !important;
+        }
+        /* 隐藏左下角摄像头预览框（包含 NO HAND 和摄像头画面） */
+        #cam-preview-container {
+            display: none !important;
+        }
+        /* 隐藏中心大提示文字（如“舉起手”），如果用户希望完全清空界面可取消注释 */
+        /* #center-instruction { display: none !important; } */
+        /* 隐藏吹气提示文字（如果需要可取消注释） */
+        /* #blow-hint { display: none !important; } */
     </style>
 </head>
 <body>
@@ -195,9 +209,10 @@
         <p class="text-pink-200/70 text-lg mt-2 tracking-widest uppercase">Best Wishes for You</p>
     </div>
 
-    <!-- UI 層（已精简） -->
+    <!-- UI 層（已精简，且左上角状态面板和左下角摄像头预览框已被隐藏） -->
     <div id="ui-layer" style="display: none;">
         <div class="flex justify-between items-start w-full">
+            <!-- 左上角状态面板（已通过CSS隐藏） -->
             <div class="glass-panel px-4 py-2">
                 <div id="status-dot" class="inline-block w-2 h-2 rounded-full bg-red-500 mr-2 shadow-[0_0_8px_red]"></div>
                 <span id="status-text" class="text-xs md:text-sm text-gray-300 tracking-wider">SYSTEM READY</span>
@@ -216,7 +231,7 @@
             <p id="auto-countdown-text" class="mt-4 text-sm text-pink-200/60 font-light tracking-wider animate-pulse hidden"></p>
         </div>
 
-        <!-- 摄像頭預覽框 -->
+        <!-- 摄像頭預覽框（已通过CSS隐藏） -->
         <div id="cam-preview-container" class="absolute bottom-6 left-6 z-50 opacity-90 hover:opacity-100">
             <div class="glass-panel p-2 rounded-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                 <div class="relative w-36 h-28 bg-black/40 rounded-lg overflow-hidden border border-white/5">
