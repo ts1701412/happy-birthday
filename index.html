@@ -380,7 +380,7 @@
             gestureHint: document.getElementById('gesture-hint')
         };
 
-        // ---------- 新增：图片轮播相关 ----------
+        // ---------- 图片轮播相关 ----------
         const IMAGE_LIST = [
             './src/1.png',
             './src/2.png',   // 请确保这些图片存在，或替换为你实际的文件名
@@ -558,13 +558,13 @@
             }, {passive: false});
             window.addEventListener('touchend', onEnd);
 
-            // ---------- 新增：单击/双击监听 (用于场景切换) ----------
+            // ---------- 单击/双击监听 (用于场景切换) ----------
             let clickTimer = null;
             const handleClick = (e) => {
                 // 防止点击按钮等交互元素时触发
                 if (e.target.closest('button') || e.target.closest('.safe-click-area')) return;
                 
-                // ★ 新增：在IDLE状态下点击直接进入吹气场景
+                // 在IDLE状态下点击直接进入吹气场景
                 if (currentState === STATE.IDLE) {
                     log('IDLE状态点击，直接开始序列');
                     startSequence();
