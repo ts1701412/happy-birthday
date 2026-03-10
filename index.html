@@ -50,15 +50,27 @@
         .input_video { display: none; }
         .glass-panel { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); }
         
-        #start-overlay { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.6); 
-            z-index: 9999; 
-            display: flex; justify-content: center; align-items: center; 
-            pointer-events: auto;
+        /* 新页面和原有启动页共用隐藏类 */
+        #pre-start-overlay, #start-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000; /* 新页面在最上层 */
             transition: opacity 0.8s ease, visibility 0.8s;
         }
-        #start-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        #start-overlay {
+            z-index: 9999; /* 原有启动页在新页面之下 */
+        }
+        #pre-start-overlay.hidden, #start-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
         
         .start-card {
             background: rgba(20, 10, 20, 0.75);
@@ -174,18 +186,29 @@
     
     <button id="floating-gift-btn" class="hidden safe-click-area" title="查看祝福">🎁</button>
 
-    <!-- 啟動頁 -->
-    <div id="start-overlay">
+    <!-- 新增前置歡迎頁 (小慧 + Happy Birthday + 驚喜文字) -->
+    <div id="pre-start-overlay" class="">
+        <div class="text-center max-w-md p-8 glass-panel start-card mx-4 animate-float">
+            <h1 class="text-5xl mb-2 font-handwriting text-pink-300 drop-shadow-lg">小慧</h1>
+            <h2 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">Happy Birthday</h2>
+            <p class="text-xl text-gray-200 mb-8 font-light">這份小驚喜，只為今日壽星</p>
+            <button id="unlock-btn" class="safe-click-area px-10 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer">
+                解鎖生日魔法
+            </button>
+        </div>
+    </div>
+
+    <!-- 原啟動頁 (初始隐藏，点击解锁后显示) -->
+    <div id="start-overlay" class="hidden">
         <div class="text-center max-w-md p-8 glass-panel start-card mx-4 animate-float">
             <h1 class="text-6xl mb-2 font-handwriting text-transparent bg-clip-text bg-gradient-to-r from-pink-300 to-purple-400 drop-shadow-lg">Happy Birthday</h1>
             <div class="space-y-4 text-gray-200 text-lg mb-8 font-light">
                 <p> 進入場景需要准許麥克風跟設想頭權限喔!</p>
-                <p>不想開鏡頭 / 麥克風，點擊螢幕就能觸發所有特效</p>
-                <p>👋 <b>對著鏡頭 舉起手，今天你是唯一的主角，專屬魔法即將喚醒</p>
-                <p>☝️ <b>豎起食指</b> 或點擊進入圖片粒子場景</p>
+                <p>👋 <b>對著鏡頭 舉起手</b> 或 <b>點擊畫面</b> 喚醒魔法</p>
+                <p>☝️ <b>豎起食指</b> 進入圖片粒子場景 (自動輪播)</p>
                 <p>✌️ <b>剪刀手</b> 或 <b>雙擊</b> 返回慶祝場景</p>
-                <p>💨 <b>對著燭光吹氣把今年的心願，都藏進晚風裡</p>
-                <p>或 <b>長按屏幕</b> 許下心願</p>
+                <p>💨 <b>持續吹氣</b> 或 <b>長按屏幕</b> 許下心願</p>
+                <p>🎉 慶祝場景：<b>手勢左右移動</b> 或 <b>滑動屏幕</b> 旋轉蛋糕</p>
             </div>
             <button id="start-btn" class="safe-click-area px-12 py-4 bg-gradient-to-r from-pink-600 to-purple-700 rounded-full font-bold text-xl hover:scale-105 active:scale-95 transition transform shadow-[0_0_20px_rgba(255,105,180,0.5)] text-white border border-white/20 cursor-pointer z-50">
                 進入魔法世界
@@ -1262,6 +1285,12 @@
                 }
             }, 1000);
         }
+
+        // 处理解锁按钮：隐藏前置页，显示原启动页
+        document.getElementById('unlock-btn').addEventListener('click', function() {
+            document.getElementById('pre-start-overlay').classList.add('hidden');
+            document.getElementById('start-overlay').classList.remove('hidden');
+        });
 
         ui.startBtn.addEventListener('click', async function() {
             log('點擊了進入按钮...');
